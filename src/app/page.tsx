@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function Login() {
+export default function Home() {
   const [credentials, setCredentials] = useState({
     email: '',
     password: ''
