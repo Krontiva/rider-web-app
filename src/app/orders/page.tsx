@@ -294,12 +294,12 @@ export default function Orders() {
           // Create new batch group
           acc[order.batchID] = {
             ...order,
-            dropOff: [order.dropOff[0]], // Start with first dropoff
-            batchedOrders: [order],      // Keep all orders in the batch
+            dropOff: [order.dropOff?.[0]], // Add optional chaining here
+            batchedOrders: [order],
           };
         } else {
           // Add to existing batch
-          acc[order.batchID].dropOff.push(order.dropOff[0]);
+          acc[order.batchID].dropOff.push(order.dropOff?.[0]); // And here
           acc[order.batchID].batchedOrders.push(order);
         }
       } else {
