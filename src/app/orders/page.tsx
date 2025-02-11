@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface Order {
@@ -96,7 +96,6 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
       const authToken = localStorage.getItem('authToken');
       if (!authToken) return;
 
-      const orderCompletedTime = new Date().toISOString();
       const response = await fetch(
         `https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table/${order.id}`,
         {
@@ -314,7 +313,7 @@ export default function Orders() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       // Get auth token from localStorage
       const authToken = localStorage.getItem('authToken');
@@ -363,11 +362,11 @@ export default function Orders() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [fetchOrders]);
 
   // Calculate counts based on order status
   const getFilterCount = (filter: FilterType) => {
