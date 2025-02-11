@@ -218,7 +218,7 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
         </div>
 
         <div className="flex justify-between items-center">
-          <span className="text-2xl font-bold">
+          <span className="text-2xl font-bold text-black">
             {totalAmount} GHS
           </span>
           {order.orderStatus !== 'Delivered' && (
@@ -279,7 +279,7 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
       </div>
 
       <div className="flex justify-between items-center">
-        <span className="text-2xl font-bold">
+        <span className="text-2xl font-bold text-black">
           {(order.deliveryPrice || 0)} GHS
         </span>
         {order.orderStatus !== 'Delivered' && (
@@ -451,7 +451,7 @@ export default function Orders() {
     <div className="min-h-screen bg-white">
       <div className="px-4 py-6 md:p-6 max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Orders</h1>
+          <h1 className="text-2xl font-bold text-black">Orders</h1>
           <button
             onClick={handleSignOut}
             className="text-gray-600 hover:text-[#FE5B18] flex items-center"
