@@ -448,58 +448,60 @@ export default function Orders() {
   }
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Orders</h1>
-        <button
-          onClick={handleSignOut}
-          className="text-gray-600 hover:text-[#FE5B18] flex items-center"
-        >
-          <svg 
-            className="w-5 h-5 mr-1" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Sign Out
-        </button>
-      </div>
-      
-      {/* Tabs */}
-      <div className="flex gap-6 border-b mb-4">
-        {(['Pending', 'Active', 'Complete'] as FilterType[]).map((tab) => (
+    <div className="min-h-screen bg-white">
+      <div className="px-4 py-6 md:p-6 max-w-2xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Orders</h1>
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`pb-2 relative ${
-              activeTab === tab
-                ? 'text-black border-b-2 border-black'
-                : 'text-gray-500'
-            }`}
+            onClick={handleSignOut}
+            className="text-gray-600 hover:text-[#FE5B18] flex items-center"
           >
-            {tab}{' '}
-            <span className={`ml-1 ${
-              activeTab === tab 
-                ? 'text-white bg-[#FE5B18] px-1.5 rounded-md' 
-                : 'text-gray-500'
-            }`}>
-              {getFilterCount(tab)}
-            </span>
+            <svg 
+              className="w-5 h-5 mr-1" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Sign Out
           </button>
-        ))}
-      </div>
+        </div>
+        
+        {/* Update tabs container padding */}
+        <div className="flex gap-4 md:gap-6 border-b mb-6 overflow-x-auto pb-2">
+          {(['Pending', 'Active', 'Complete'] as FilterType[]).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-2 relative ${
+                activeTab === tab
+                  ? 'text-black border-b-2 border-black'
+                  : 'text-gray-500'
+              }`}
+            >
+              {tab}{' '}
+              <span className={`ml-1 ${
+                activeTab === tab 
+                  ? 'text-white bg-[#FE5B18] px-1.5 rounded-md' 
+                  : 'text-gray-500'
+              }`}>
+                {getFilterCount(tab)}
+              </span>
+            </button>
+          ))}
+        </div>
 
-      {/* Orders List */}
-      <div className="space-y-4">
-        {filteredOrders.map((order) => (
-          <OrderCard 
-            key={order.id} 
-            order={order} 
-            onRefresh={fetchOrders}
-          />
-        ))}
+        {/* Update cards container spacing */}
+        <div className="space-y-4 md:space-y-6">
+          {filteredOrders.map((order) => (
+            <OrderCard 
+              key={order.id} 
+              order={order} 
+              onRefresh={fetchOrders}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
