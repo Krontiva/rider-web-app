@@ -19,6 +19,9 @@ interface Order {
   batchID?: string;
   batchedOrderNumbers?: number[];
   courierName: string;
+  orderReceivedTime: string;
+  orderPickedupTime: string;
+  orderOnmywayTime: string;
 }
 
 type FilterType = 'Pending' | 'Active' | 'Complete';
@@ -58,7 +61,12 @@ const STATUS_COLORS = {
   }
 } as const;
 
-const OrderCard = ({ order }: { order: Order & { batchedOrders?: Order[] } }) => {
+interface OrderCardProps {
+  order: Order & { batchedOrders?: Order[] };
+  onRefresh: () => void;
+}
+
+const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
   const getStatusColors = (status: string) => {
     return STATUS_COLORS[status as keyof typeof STATUS_COLORS] || STATUS_COLORS.ReadyForPickup;
   };
@@ -82,6 +90,88 @@ const OrderCard = ({ order }: { order: Order & { batchedOrders?: Order[] } }) =>
       window.open(url, '_blank');
     }
   };
+
+  const handleComplete = async () => {
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) return;
+
+      const orderCompletedTime = new Date().toISOString();
+      const response = await fetch(
+        `https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table/${order.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Xano-Authorization': `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            completed: true,
+            orderCompletedTime: new Date().toISOString(),
+            orderStatus: 'Delivered',
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to update order status');
+      }
+
+      // If this is a batch order, update all orders with same batchID
+      if (order.batchID && order.batchedOrders) {
+        await Promise.all(
+          order.batchedOrders.map(async (batchOrder) => {
+            if (batchOrder.id !== order.id) {
+              await fetch(
+                `https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table/${batchOrder.id}`,
+                {
+                  method: 'PATCH',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-Xano-Authorization': `Bearer ${authToken}`,
+                  },
+                  body: JSON.stringify({
+                    completed: true,
+                    orderCompletedTime: new Date().toISOString(),
+                    orderStatus: 'Delivered',
+                  }),
+                }
+              );
+            }
+          })
+        );
+      }
+
+      // Refresh orders list
+      onRefresh();
+
+    } catch (error) {
+      console.error('Error updating order:', error);
+      alert('Failed to update order status');
+    }
+  };
+
+  const completeButton = (
+    <button 
+      className="ml-4 text-white font-medium flex items-center bg-[#FE5B18] px-4 py-2 rounded-md hover:bg-[#e54d0e]"
+      onClick={handleComplete}
+    >
+      <svg 
+        className="w-4 h-4 mr-1" 
+        fill="none" 
+        stroke="currentColor" 
+        viewBox="0 0 24 24"
+      >
+        <path 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          strokeWidth={2} 
+          d="M5 13l4 4L19 7"
+        />
+      </svg>
+      Complete
+    </button>
+  );
 
   if (order.batchID && order.batchedOrders) {
     const totalAmount = order.batchedOrders.reduce((sum, order) => 
@@ -132,20 +222,25 @@ const OrderCard = ({ order }: { order: Order & { batchedOrders?: Order[] } }) =>
           <span className="text-2xl font-bold">
             {totalAmount} GHS
           </span>
-          <button 
-            className="text-[#FE5B18] font-medium flex items-center"
-            onClick={handleViewDetails}
-          >
-            <svg 
-              className="w-4 h-4 mr-1" 
-              fill="currentColor" 
-              viewBox="0 0 20 20"
-            >
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.88-2.88 7.19-5 9.88C9.92 16.21 7 11.85 7 9z"/>
-              <circle cx="12" cy="9" r="2.5"/>
-            </svg>
-            Show Route
-          </button>
+          {order.orderStatus !== 'Delivered' && (
+            <div className="flex items-center">
+              <button 
+                className="text-[#FE5B18] font-medium flex items-center"
+                onClick={handleViewDetails}
+              >
+                <svg 
+                  className="w-4 h-4 mr-1" 
+                  fill="currentColor" 
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.88-2.88 7.19-5 9.88C9.92 16.21 7 11.85 7 9z"/>
+                  <circle cx="12" cy="9" r="2.5"/>
+                </svg>
+                Show Route
+              </button>
+              {completeButton}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -188,20 +283,25 @@ const OrderCard = ({ order }: { order: Order & { batchedOrders?: Order[] } }) =>
         <span className="text-2xl font-bold">
           {(order.deliveryPrice || 0)} GHS
         </span>
-        <button 
-          className="text-[#FE5B18] font-medium flex items-center"
-          onClick={handleViewDetails}
-        >
-          <svg 
-            className="w-4 h-4 mr-1" 
-            fill="currentColor" 
-            viewBox="0 0 20 20"
-          >
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.88-2.88 7.19-5 9.88C9.92 16.21 7 11.85 7 9z"/>
-            <circle cx="12" cy="9" r="2.5"/>
-          </svg>
-          Show Route
-        </button>
+        {order.orderStatus !== 'Delivered' && (
+          <div className="flex items-center">
+            <button 
+              className="text-[#FE5B18] font-medium flex items-center"
+              onClick={handleViewDetails}
+            >
+              <svg 
+                className="w-4 h-4 mr-1" 
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+              >
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.88-2.88 7.19-5 9.88C9.92 16.21 7 11.85 7 9z"/>
+                <circle cx="12" cy="9" r="2.5"/>
+              </svg>
+              Show Route
+            </button>
+            {completeButton}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -276,10 +376,10 @@ export default function Orders() {
         return orders.filter(order => order.orderStatus === 'Assigned').length;
       case 'Active':
         return orders.filter(order => 
-          ['Delivered', 'Pickup', 'OnTheWay'].includes(order.orderStatus)
+          ['Pickup', 'OnTheWay'].includes(order.orderStatus)
         ).length;
       case 'Complete':
-        return orders.filter(order => order.orderStatus === 'Completed').length;
+        return orders.filter(order => order.orderStatus === 'Delivered').length;
       default:
         return 0;
     }
@@ -300,7 +400,6 @@ export default function Orders() {
         } else {
           // Add to existing batch
           acc[order.batchID].dropOff.push(order.dropOff?.[0]); // And here
-          acc[order.batchID].batchedOrders.push(order);
         }
       } else {
         // Non-batched orders use their ID as key
@@ -322,11 +421,11 @@ export default function Orders() {
         break;
       case 'Active':
         filteredOrders = orders.filter(order => 
-          ['Delivered', 'Pickup', 'OnTheWay'].includes(order.orderStatus)
+          ['Pickup', 'OnTheWay'].includes(order.orderStatus)
         );
         break;
       case 'Complete':
-        filteredOrders = orders.filter(order => order.orderStatus === 'Completed');
+        filteredOrders = orders.filter(order => order.orderStatus === 'Delivered');
         break;
     }
 
@@ -396,7 +495,11 @@ export default function Orders() {
       {/* Orders List */}
       <div className="space-y-4">
         {filteredOrders.map((order) => (
-          <OrderCard key={order.id} order={order} />
+          <OrderCard 
+            key={order.id} 
+            order={order} 
+            onRefresh={fetchOrders}
+          />
         ))}
       </div>
     </div>
