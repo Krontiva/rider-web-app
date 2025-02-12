@@ -13,8 +13,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Delika Rider Web",
+  title: "Delika Rider",
   description: "Delika delivery management system",
+  icons: {
+    apple: [
+      { url: '/favicon.ico' },  // For iOS devices
+      { url: '/favicon.ico' },           // Regular favicon
+    ],
+    shortcut: ['/favicon.ico'],          // Regular favicon
+  },
 };
 
 export default function RootLayout({
