@@ -22,10 +22,10 @@ interface Order {
   orderReceivedTime: string;
   orderPickedupTime: string;
   orderOnmywayTime: string;
-  customerPhone: string;
+  customerPhoneNumber: string;
 }
 
-type FilterType = 'Pending' | 'Active' | 'Complete';
+type FilterType = 'Pending' | 'Complete';
 
 const STATUS_COLORS = {
   ReadyForPickup: {
@@ -211,9 +211,9 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
                 <p className="text-sm text-gray-500 truncate">
                   {batchedOrder.dropOff?.[0]?.toAddress || ''}
                 </p>
-                {batchedOrder.customerPhone && (
+                {batchedOrder.customerPhoneNumber && (
                   <button 
-                    onClick={() => handleCall(batchedOrder.customerPhone)}
+                    onClick={() => handleCall(batchedOrder.customerPhoneNumber)}
                     className="text-[#FE5B18] text-sm flex items-center mt-1"
                   >
                     <svg 
@@ -223,7 +223,7 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
                     >
                       <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                     </svg>
-                    {batchedOrder.customerPhone}
+                    {batchedOrder.customerPhoneNumber}
                   </button>
                 )}
               </div>
@@ -270,22 +270,24 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="text-lg font-semibold text-black">{order.customerName}</h3>
-          <p className="text-gray-500 text-sm">#{String(order.orderNumber).padStart(3, '0')}</p>
-          {order.customerPhone && (
-            <button 
-              onClick={() => handleCall(order.customerPhone)}
-              className="text-[#FE5B18] text-sm flex items-center mt-1"
-            >
-              <svg 
-                className="w-4 h-4 mr-1" 
-                fill="currentColor" 
-                viewBox="0 0 20 20"
+          <div className="flex items-center gap-3">
+            <p className="text-gray-500 text-sm">#{String(order.orderNumber).padStart(3, '0')}</p>
+            {order.customerPhoneNumber && (
+              <button 
+                onClick={() => handleCall(order.customerPhoneNumber)}
+                className="text-[#FE5B18] text-sm flex items-center"
               >
-                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-              </svg>
-              {order.customerPhone}
-            </button>
-          )}
+                <svg 
+                  className="w-4 h-4 mr-1" 
+                  fill="currentColor" 
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                </svg>
+                {order.customerPhoneNumber}
+              </button>
+            )}
+          </div>
         </div>
         <span 
           className="px-3 py-1 rounded-full text-sm"
@@ -298,14 +300,14 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
         </span>
       </div>
 
-      <div className="space-y-2 mb-4">
-        <div>
+      <div className="flex gap-4 mb-4">
+        <div className="flex-1">
           <p className="font-semibold mb-1 text-black">Pickup</p>
           <p className="text-gray-600 truncate">
             {order.pickup?.[0]?.fromAddress || ''}
           </p>
         </div>
-        <div>
+        <div className="flex-1">
           <p className="font-semibold mb-1 text-black">Dropoff</p>
           <p className="text-gray-600 truncate">
             {order.dropOff?.[0]?.toAddress || ''}
@@ -342,7 +344,7 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
 };
 
 export default function Orders() {
-  const [activeTab, setActiveTab] = useState<FilterType>('Active');
+  const [activeTab, setActiveTab] = useState<FilterType>('Pending');
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -408,10 +410,6 @@ export default function Orders() {
     switch (filter) {
       case 'Pending':
         return orders.filter(order => order.orderStatus === 'Assigned').length;
-      case 'Active':
-        return orders.filter(order => 
-          ['Pickup', 'OnTheWay'].includes(order.orderStatus)
-        ).length;
       case 'Complete':
         return orders.filter(order => order.orderStatus === 'Delivered').length;
       default:
@@ -453,17 +451,11 @@ export default function Orders() {
       case 'Pending':
         filteredOrders = orders.filter(order => order.orderStatus === 'Assigned');
         break;
-      case 'Active':
-        filteredOrders = orders.filter(order => 
-          ['Pickup', 'OnTheWay'].includes(order.orderStatus)
-        );
-        break;
       case 'Complete':
         filteredOrders = orders.filter(order => order.orderStatus === 'Delivered');
         break;
     }
 
-    // Group orders by batch after filtering
     return groupOrdersByBatch(filteredOrders);
   };
 
@@ -505,7 +497,7 @@ export default function Orders() {
         
         {/* Update tabs container padding */}
         <div className="flex gap-4 md:gap-6 border-b mb-6 overflow-x-auto pb-2">
-          {(['Pending', 'Active', 'Complete'] as FilterType[]).map((tab) => (
+          {(['Pending', 'Complete'] as FilterType[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
