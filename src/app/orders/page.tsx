@@ -22,6 +22,7 @@ interface Order {
   orderReceivedTime: string;
   orderPickedupTime: string;
   orderOnmywayTime: string;
+  customerPhone: string;
 }
 
 type FilterType = 'Pending' | 'Active' | 'Complete';
@@ -150,6 +151,10 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
     }
   };
 
+  const handleCall = (phoneNumber: string) => {
+    window.location.href = `tel:${phoneNumber}`;
+  };
+
   const completeButton = (
     <button 
       className="ml-4 text-white font-medium flex items-center bg-[#FE5B18] px-4 py-2 rounded-md hover:bg-[#e54d0e]"
@@ -206,6 +211,21 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
                 <p className="text-sm text-gray-500 truncate">
                   {batchedOrder.dropOff?.[0]?.toAddress || ''}
                 </p>
+                {batchedOrder.customerPhone && (
+                  <button 
+                    onClick={() => handleCall(batchedOrder.customerPhone)}
+                    className="text-[#FE5B18] text-sm flex items-center mt-1"
+                  >
+                    <svg 
+                      className="w-4 h-4 mr-1" 
+                      fill="currentColor" 
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                    </svg>
+                    {batchedOrder.customerPhone}
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -218,7 +238,7 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
         </div>
 
         <div className="flex justify-between items-center">
-          <span className="text-2xl font-bold text-black">
+          <span className="text-lg font-bold text-black">
             {totalAmount} GHS
           </span>
           {order.orderStatus !== 'Delivered' && (
@@ -249,8 +269,23 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
     <div className="bg-white p-4 rounded-lg shadow mb-4">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-lg font-semibold">{order.customerName}</h3>
+          <h3 className="text-lg font-semibold text-black">{order.customerName}</h3>
           <p className="text-gray-500 text-sm">#{String(order.orderNumber).padStart(3, '0')}</p>
+          {order.customerPhone && (
+            <button 
+              onClick={() => handleCall(order.customerPhone)}
+              className="text-[#FE5B18] text-sm flex items-center mt-1"
+            >
+              <svg 
+                className="w-4 h-4 mr-1" 
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+              >
+                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+              </svg>
+              {order.customerPhone}
+            </button>
+          )}
         </div>
         <span 
           className="px-3 py-1 rounded-full text-sm"
@@ -265,13 +300,13 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
 
       <div className="space-y-2 mb-4">
         <div>
-          <p className="font-semibold mb-1">Pickup</p>
+          <p className="font-semibold mb-1 text-black">Pickup</p>
           <p className="text-gray-600 truncate">
             {order.pickup?.[0]?.fromAddress || ''}
           </p>
         </div>
         <div>
-          <p className="font-semibold mb-1">Dropoff</p>
+          <p className="font-semibold mb-1 text-black">Dropoff</p>
           <p className="text-gray-600 truncate">
             {order.dropOff?.[0]?.toAddress || ''}
           </p>
@@ -279,7 +314,7 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
       </div>
 
       <div className="flex justify-between items-center">
-        <span className="text-2xl font-bold text-black">
+        <span className="text-lg font-bold text-black">
           {(order.deliveryPrice || 0)} GHS
         </span>
         {order.orderStatus !== 'Delivered' && (
