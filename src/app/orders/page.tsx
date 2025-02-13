@@ -25,7 +25,7 @@ interface Order {
   customerPhoneNumber: string;
 }
 
-type FilterType = 'Pending' | 'Complete';
+type FilterType = 'Pending' | 'Complete' | 'Cancelled';
 
 const STATUS_COLORS = {
   ReadyForPickup: {
@@ -68,6 +68,9 @@ interface OrderCardProps {
 }
 
 const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+
   const getStatusColors = (status: string) => {
     return STATUS_COLORS[status as keyof typeof STATUS_COLORS] || STATUS_COLORS.ReadyForPickup;
   };
@@ -94,6 +97,7 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
 
   const handleComplete = async () => {
     try {
+      setIsCompleting(true);
       const authToken = localStorage.getItem('authToken');
       if (!authToken) return;
 
@@ -148,6 +152,66 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
     } catch (error) {
       console.error('Error updating order:', error);
       alert('Failed to update order status');
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    try {
+      setIsCancelling(true);
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) return;
+
+      const response = await fetch(
+        `https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table/${order.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Xano-Authorization': `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            completed: false,
+            orderStatus: 'Cancelled',
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to cancel order');
+      }
+
+      // If this is a batch order, cancel all orders with same batchID
+      if (order.batchID && order.batchedOrders) {
+        await Promise.all(
+          order.batchedOrders.map(async (batchOrder) => {
+            if (batchOrder.id !== order.id) {
+              await fetch(
+                `https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table/${batchOrder.id}`,
+                {
+                  method: 'PATCH',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-Xano-Authorization': `Bearer ${authToken}`,
+                  },
+                  body: JSON.stringify({
+                    completed: false,
+                    orderStatus: 'Cancelled',
+                  }),
+                }
+              );
+            }
+          })
+        );
+      }
+
+      onRefresh();
+    } catch (error) {
+      console.error('Error canceling order:', error);
+      alert('Failed to cancel order');
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -155,32 +219,59 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
     window.location.href = `tel:${phoneNumber}`;
   };
 
-  const completeButton = (
-    <button 
-      className="ml-4 text-white font-medium flex items-center bg-[#FE5B18] px-4 py-2 rounded-md hover:bg-[#e54d0e]"
-      onClick={handleComplete}
-    >
-      <svg 
-        className="w-4 h-4 mr-1" 
-        fill="none" 
-        stroke="currentColor" 
-        viewBox="0 0 24 24"
+  const actionButtons = (
+    <div className="flex items-center gap-2">
+      <button 
+        className="text-white font-medium flex items-center bg-[#FE5B18] px-4 py-2 rounded-md hover:bg-[#e54d0e] disabled:opacity-50"
+        onClick={handleComplete}
+        disabled={isCompleting || isCancelling}
       >
-        <path 
-          strokeLinecap="round" 
-          strokeLinejoin="round" 
-          strokeWidth={2} 
-          d="M5 13l4 4L19 7"
-        />
-      </svg>
-      Complete
-    </button>
+        {isCompleting ? (
+          <svg className="animate-spin h-4 w-4 mr-1" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+        ) : (
+          <svg 
+            className="w-4 h-4 mr-1" 
+            fill="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        )}
+        {isCompleting ? 'Completing...' : 'Complete'}
+      </button>
+      <button 
+        className="text-white font-medium flex items-center bg-black px-4 py-2 rounded-md hover:bg-gray-800 disabled:opacity-50"
+        onClick={handleCancel}
+        disabled={isCompleting || isCancelling}
+      >
+        {isCancelling ? (
+          <svg className="animate-spin h-4 w-4 mr-1" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+        ) : (
+          <svg 
+            className="w-4 h-4 mr-1" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        )}
+        {isCancelling ? 'Cancelling...' : 'Cancel'}
+      </button>
+    </div>
   );
 
   if (order.batchID && order.batchedOrders) {
-    const totalAmount = order.batchedOrders.reduce((sum, order) => 
-      sum + (order.deliveryPrice || 0), 0
-    );
+    // Calculate total amount from all orders in the batch
+    const totalAmount = order.batchedOrders.reduce((sum, batchOrder) => 
+      sum + (Number(batchOrder.deliveryPrice) || 0), 
+    0).toFixed(2);  // Add toFixed(2) for proper decimal formatting
 
     return (
       <div className="bg-[#FFF8E1] p-4 rounded-lg shadow mb-4">
@@ -242,7 +333,7 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
             {totalAmount} GHS
           </span>
           {order.orderStatus !== 'Delivered' && (
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
               <button 
                 className="text-[#FE5B18] font-medium flex items-center"
                 onClick={handleViewDetails}
@@ -257,7 +348,7 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
                 </svg>
                 Show Route
               </button>
-              {completeButton}
+              {actionButtons}
             </div>
           )}
         </div>
@@ -320,7 +411,7 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
           {(order.deliveryPrice || 0)} GHS
         </span>
         {order.orderStatus !== 'Delivered' && (
-          <div className="flex items-center">
+          <div className="flex items-center gap-4">
             <button 
               className="text-[#FE5B18] font-medium flex items-center"
               onClick={handleViewDetails}
@@ -335,7 +426,7 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
               </svg>
               Show Route
             </button>
-            {completeButton}
+            {actionButtons}
           </div>
         )}
       </div>
@@ -412,12 +503,14 @@ export default function Orders() {
         return orders.filter(order => order.orderStatus === 'Assigned').length;
       case 'Complete':
         return orders.filter(order => order.orderStatus === 'Delivered').length;
+      case 'Cancelled':
+        return orders.filter(order => order.orderStatus === 'Cancelled').length;
       default:
         return 0;
     }
   };
 
-  // Add this helper function to group orders by batch ID
+  // Update the groupOrdersByBatch function
   const groupOrdersByBatch = (orders: Order[]) => {
     const grouped = orders.reduce((acc, order) => {
       if (order.batchID) {
@@ -426,16 +519,17 @@ export default function Orders() {
           // Create new batch group
           acc[order.batchID] = {
             ...order,
-            dropOff: [order.dropOff?.[0]], // Add optional chaining here
+            dropOff: [order.dropOff?.[0]],
             batchedOrders: [order],
           };
         } else {
           // Add to existing batch
-          acc[order.batchID].dropOff.push(order.dropOff?.[0]); // And here
+          acc[order.batchID].dropOff.push(order.dropOff?.[0]);
+          acc[order.batchID].batchedOrders?.push(order);
         }
       } else {
         // Non-batched orders use their ID as key
-        acc[order.id] = order;
+        acc[`single-${order.id}`] = order;  // Add 'single-' prefix to avoid ID conflicts
       }
       return acc;
     }, {} as Record<string, Order & { batchedOrders?: Order[] }>);
@@ -453,6 +547,9 @@ export default function Orders() {
         break;
       case 'Complete':
         filteredOrders = orders.filter(order => order.orderStatus === 'Delivered');
+        break;
+      case 'Cancelled':
+        filteredOrders = orders.filter(order => order.orderStatus === 'Cancelled');
         break;
     }
 
@@ -497,7 +594,7 @@ export default function Orders() {
         
         {/* Update tabs container padding */}
         <div className="flex gap-4 md:gap-6 border-b mb-6 overflow-x-auto pb-2">
-          {(['Pending', 'Complete'] as FilterType[]).map((tab) => (
+          {(['Pending', 'Complete', 'Cancelled'] as FilterType[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}

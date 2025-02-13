@@ -46,7 +46,6 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      // Login request
       const loginResponse = await fetch('https://api-server.krontiva.africa/api:uEBBwbSs/auth/login', {
         method: 'POST',
         headers: {
@@ -61,14 +60,11 @@ export default function Home() {
 
       const { authToken } = await loginResponse.json();
       
-      // Store auth token
-      localStorage.setItem('authToken', authToken);
+      // Store token temporarily
+      localStorage.setItem('tempAuthToken', authToken);
 
-      // Authenticate user
-      await authenticateUser(authToken);
-
-      // Navigate to orders page
-      router.push('/orders');
+      // Redirect to verify page with email
+      router.push(`/verify?email=${encodeURIComponent(credentials.email)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
