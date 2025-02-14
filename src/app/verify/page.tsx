@@ -9,7 +9,7 @@ export default function Verify() {
   const [isSending, setIsSending] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get('email');
+  const email = searchParams?.get('email');
 
   const sendOTP = async () => {
     try {

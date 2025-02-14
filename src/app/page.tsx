@@ -17,6 +17,7 @@ export default function Home() {
     setIsLoading(true);
 
     try {
+      // First authenticate the user
       const loginResponse = await fetch('https://api-server.krontiva.africa/api:uEBBwbSs/auth/login', {
         method: 'POST',
         headers: {
@@ -31,13 +32,51 @@ export default function Home() {
 
       const { authToken } = await loginResponse.json();
       
+      // Verify the user's role using the auth token
+      const userResponse = await fetch('https://api-server.krontiva.africa/api:uEBBwbSs/auth/me', {
+        headers: {
+          'X-Xano-Authorization': `Bearer ${authToken}`,
+          'X-Xano-Authorization-Only': 'true',
+        }
+      });
+
+      if (!userResponse.ok) {
+        throw new Error('Authentication failed');
+      }
+
+      const userData = await userResponse.json();
+      
+      // Check if user is a rider (add your role check logic here)
+      if (userData.role !== 'rider') {  // adjust the role check based on your user data structure
+        throw new Error('Unauthorized access');
+      }
+
       // Store token temporarily
       localStorage.setItem('tempAuthToken', authToken);
 
-      // Redirect to verify page with email
+      // Send OTP
+      const otpResponse = await fetch(
+        'https://api-server.krontiva.africa/api:uEBBwbSs/reset/user/password/email',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: credentials.email
+          }),
+        }
+      );
+
+      if (!otpResponse.ok) {
+        throw new Error('Failed to send OTP');
+      }
+
+      // If everything is successful, redirect to verify page
       router.push(`/verify?email=${encodeURIComponent(credentials.email)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
+      localStorage.removeItem('tempAuthToken'); // Clean up on error
     } finally {
       setIsLoading(false);
     }
