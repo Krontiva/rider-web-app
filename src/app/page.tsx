@@ -48,7 +48,7 @@ export default function Home() {
       const userData = await userResponse.json();
       
       // Check if user is a rider (add your role check logic here)
-      if (userData.role !== 'rider') {  // adjust the role check based on your user data structure
+      if (userData.role !== 'Rider') {  // adjust the role check based on your user data structure
         throw new Error('Unauthorized access');
       }
 
