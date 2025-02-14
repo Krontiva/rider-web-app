@@ -35,6 +35,7 @@ export default function Home() {
       // Verify the user's role using the auth token
       const userResponse = await fetch('https://api-server.krontiva.africa/api:uEBBwbSs/auth/me', {
         headers: {
+          'Content-Type': 'application/json',
           'X-Xano-Authorization': `Bearer ${authToken}`,
           'X-Xano-Authorization-Only': 'true',
         }
@@ -88,27 +89,6 @@ export default function Home() {
       ...prev,
       [name]: value
     }));
-  };
-
-  const authenticateUser = async (authToken: string) => {
-    try {
-      const response = await fetch('https://api-server.krontiva.africa/api:uEBBwbSs/auth/me', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Xano-Authorization': `Bearer ${authToken}`,
-          'X-Xano-Authorization-Only': 'true',
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Authentication failed');
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw error;
-    }
   };
 
   return (
