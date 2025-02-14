@@ -332,7 +332,7 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
           <span className="text-lg font-bold text-black">
             {totalAmount} GHS
           </span>
-          {order.orderStatus !== 'Delivered' && (
+          {order.orderStatus !== 'Delivered' && order.orderStatus !== 'Cancelled' && (
             <div className="flex items-center gap-4">
               <button 
                 className="text-[#FE5B18] font-medium flex items-center"
@@ -410,7 +410,7 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
         <span className="text-lg font-bold text-black">
           {(order.deliveryPrice || 0)} GHS
         </span>
-        {order.orderStatus !== 'Delivered' && (
+        {order.orderStatus !== 'Delivered' && order.orderStatus !== 'Cancelled' && (
           <div className="flex items-center gap-4">
             <button 
               className="text-[#FE5B18] font-medium flex items-center"
