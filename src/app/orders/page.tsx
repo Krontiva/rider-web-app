@@ -23,6 +23,7 @@ interface Order {
   orderPickedupTime: string;
   orderOnmywayTime: string;
   customerPhoneNumber: string;
+  distance?: number;
 }
 
 type FilterType = 'Pending' | 'Complete' | 'Cancelled';
@@ -77,17 +78,34 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
 
   const handleViewDetails = () => {
     if (order.batchID && order.batchedOrders) {
+      // Get pickup location
       const origin = encodeURIComponent(order.pickup?.[0]?.fromAddress || '');
-      const destinations = order.batchedOrders.map(o => 
+      
+      // Sort orders by sequence if available, otherwise keep original order
+      const sortedOrders = [...order.batchedOrders].sort((a, b) => {
+        // If you have a sequence number in your order data, use that
+        return (a.batchedOrderNumbers?.[0] || 0) - (b.batchedOrderNumbers?.[0] || 0);
+      });
+
+      // Get all dropoff points
+      const destinations = sortedOrders.map(o => 
         encodeURIComponent(o.dropOff?.[0]?.toAddress || '')
       );
-      
-      const waypoints = destinations.slice(0, -1).map(dest => `via:${dest}`).join('|');
+
+      // Create waypoints string (excluding last destination)
+      const waypoints = destinations.slice(0, -1)
+        .map(dest => `via:${dest}`)
+        .join('|');
+
+      // Last address is the final destination
       const finalDestination = destinations[destinations.length - 1];
       
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${finalDestination}${waypoints ? `&waypoints=${waypoints}` : ''}`;
+      // Construct Google Maps URL with optimized route
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${finalDestination}${waypoints ? `&waypoints=${waypoints}&optimize=true` : ''}`;
+      
       window.open(url, '_blank');
     } else {
+      // Regular single order route
       const origin = encodeURIComponent(order.pickup?.[0]?.fromAddress || '');
       const destination = encodeURIComponent(order.dropOff?.[0]?.toAddress || '');
       const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
@@ -298,25 +316,39 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
                 <span className="text-white text-sm font-bold">{index + 1}</span>
               </div>
               <div className="flex-1">
-                <span className="text-gray-600">Order #{batchedOrder.orderNumber}</span>
-                <p className="text-sm text-gray-500 truncate">
-                  {batchedOrder.dropOff?.[0]?.toAddress || ''}
-                </p>
-                {batchedOrder.customerPhoneNumber && (
-                  <button 
-                    onClick={() => handleCall(batchedOrder.customerPhoneNumber)}
-                    className="text-[#FE5B18] text-sm flex items-center mt-1"
-                  >
-                    <svg 
-                      className="w-4 h-4 mr-1" 
-                      fill="currentColor" 
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                    </svg>
-                    {batchedOrder.customerPhoneNumber}
-                  </button>
-                )}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-gray-600">Order #{batchedOrder.orderNumber}</span>
+                    <p className="text-sm text-gray-500 truncate">
+                      {batchedOrder.dropOff?.[0]?.toAddress || ''}
+                    </p>
+                    {batchedOrder.customerPhoneNumber && (
+                      <button 
+                        onClick={() => handleCall(batchedOrder.customerPhoneNumber)}
+                        className="text-[#FE5B18] text-sm flex items-center mt-1"
+                      >
+                        <svg 
+                          className="w-4 h-4 mr-1" 
+                          fill="currentColor" 
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                        </svg>
+                        {batchedOrder.customerPhoneNumber}
+                      </button>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-sm font-medium text-black">
+                      {(batchedOrder.deliveryPrice || 0)} GHS
+                    </span>
+                    {batchedOrder.distance && (
+                      <p className="text-xs text-gray-500">
+                        {batchedOrder.distance} km
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           ))}
