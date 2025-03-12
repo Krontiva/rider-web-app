@@ -21,7 +21,7 @@ export default function Home() {
       const loginResponse = await fetch('https://api-server.krontiva.africa/api:uEBBwbSs/auth/login', {
         method: 'POST',
         headers: {
-          'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(credentials)
       });
