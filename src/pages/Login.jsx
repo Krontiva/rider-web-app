@@ -32,8 +32,8 @@ const Login = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: credentials.email,
-          password: credentials.password
+          username: "dibelaba@gmail.com",
+          password: "password"
         })
       });
 
