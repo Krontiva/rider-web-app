@@ -27,7 +27,7 @@ export default function Home() {
       });
 
       if (!loginResponse.ok) {
-        throw new Error('Invalid credentials');
+        throw new Error('Invalid');
       }
 
       const { authToken } = await loginResponse.json();
