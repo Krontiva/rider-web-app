@@ -54,7 +54,7 @@ export default function Home() {
 
       // Store token and redirect to orders
       localStorage.setItem('authToken', authToken);
-      router.push('/restaurant');
+      router.push('/orders');
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
