@@ -32,7 +32,10 @@ const Login = () => {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(credentials)
+        body: JSON.stringify({
+          username: credentials.email,
+          password: credentials.password
+        })
       });
 
       if (!loginResponse.ok) {
