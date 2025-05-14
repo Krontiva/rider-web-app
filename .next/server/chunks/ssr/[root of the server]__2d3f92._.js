@@ -47,6 +47,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navi
 ;
 ;
 ;
+;
 const STATUS_COLORS = {
     ReadyForPickup: {
         background: '#DEE9FF',
@@ -82,6 +83,7 @@ const STATUS_COLORS = {
     }
 };
 function OrderDetails({ params }) {
+    const { id } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["use"])(params);
     const [order, setOrder] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(true);
     const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
@@ -117,7 +119,7 @@ function OrderDetails({ params }) {
                 const userData = await userResponse.json();
                 setPhoneNumber(userData.phoneNumber);
                 // Fetch order details
-                const response = await fetch(`https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table/${params.id}`, {
+                const response = await fetch(`https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table/${id}`, {
                     headers: {
                         'X-Xano-Authorization': `Bearer ${authToken}`
                     }
@@ -136,7 +138,7 @@ function OrderDetails({ params }) {
         };
         fetchOrderDetails();
     }, [
-        params.id,
+        id,
         router
     ]);
     const handleOtpSubmit = async (e)=>{
@@ -374,37 +376,37 @@ function OrderDetails({ params }) {
                             className: "h-8 bg-gray-200 rounded w-1/4"
                         }, void 0, false, {
                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                            lineNumber: 410,
-                            columnNumber: 13
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "h-32 bg-gray-200 rounded"
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/orders/[id]/page.tsx",
-                            lineNumber: 411,
-                            columnNumber: 13
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "h-32 bg-gray-200 rounded"
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/orders/[id]/page.tsx",
                             lineNumber: 412,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "h-32 bg-gray-200 rounded"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/orders/[id]/page.tsx",
+                            lineNumber: 413,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "h-32 bg-gray-200 rounded"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/orders/[id]/page.tsx",
+                            lineNumber: 414,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                    lineNumber: 409,
+                    lineNumber: 411,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                lineNumber: 408,
+                lineNumber: 410,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/app/orders/[id]/page.tsx",
-            lineNumber: 407,
+            lineNumber: 409,
             columnNumber: 7
         }, this);
     }
@@ -418,17 +420,17 @@ function OrderDetails({ params }) {
                     children: error
                 }, void 0, false, {
                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                    lineNumber: 423,
+                    lineNumber: 425,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                lineNumber: 422,
+                lineNumber: 424,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/app/orders/[id]/page.tsx",
-            lineNumber: 421,
+            lineNumber: 423,
             columnNumber: 7
         }, this);
     }
@@ -442,17 +444,17 @@ function OrderDetails({ params }) {
                     children: "Order not found"
                 }, void 0, false, {
                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                    lineNumber: 433,
+                    lineNumber: 435,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                lineNumber: 432,
+                lineNumber: 434,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/app/orders/[id]/page.tsx",
-            lineNumber: 431,
+            lineNumber: 433,
             columnNumber: 7
         }, this);
     }
@@ -469,7 +471,7 @@ function OrderDetails({ params }) {
                                 children: "Enter Verification Code"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                lineNumber: 444,
+                                lineNumber: 446,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -480,13 +482,13 @@ function OrderDetails({ params }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                lineNumber: 447,
+                                lineNumber: 449,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                        lineNumber: 443,
+                        lineNumber: 445,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -503,7 +505,7 @@ function OrderDetails({ params }) {
                                             children: "Verification Code"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 454,
+                                            lineNumber: 456,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -521,7 +523,7 @@ function OrderDetails({ params }) {
                                             disabled: isVerifying
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 457,
+                                            lineNumber: 459,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -532,18 +534,18 @@ function OrderDetails({ params }) {
                                             children: "Resend Code"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 471,
+                                            lineNumber: 473,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                    lineNumber: 453,
+                                    lineNumber: 455,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                lineNumber: 452,
+                                lineNumber: 454,
                                 columnNumber: 13
                             }, this),
                             error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -551,7 +553,7 @@ function OrderDetails({ params }) {
                                 children: error
                             }, void 0, false, {
                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                lineNumber: 483,
+                                lineNumber: 485,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -576,7 +578,7 @@ function OrderDetails({ params }) {
                                                         strokeWidth: "4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                        lineNumber: 497,
+                                                        lineNumber: 499,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -585,47 +587,47 @@ function OrderDetails({ params }) {
                                                         d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                        lineNumber: 498,
+                                                        lineNumber: 500,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                lineNumber: 496,
+                                                lineNumber: 498,
                                                 columnNumber: 21
                                             }, this),
                                             "Verifying..."
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                        lineNumber: 495,
+                                        lineNumber: 497,
                                         columnNumber: 19
                                     }, this) : 'Verify'
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                    lineNumber: 489,
+                                    lineNumber: 491,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                lineNumber: 488,
+                                lineNumber: 490,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                        lineNumber: 451,
+                        lineNumber: 453,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                lineNumber: 442,
+                lineNumber: 444,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/app/orders/[id]/page.tsx",
-            lineNumber: 441,
+            lineNumber: 443,
             columnNumber: 7
         }, this);
     }
@@ -652,17 +654,17 @@ function OrderDetails({ params }) {
                                     d: "M15 19l-7-7 7-7"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                    lineNumber: 525,
+                                    lineNumber: 527,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                lineNumber: 519,
+                                lineNumber: 521,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                            lineNumber: 515,
+                            lineNumber: 517,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
@@ -670,13 +672,13 @@ function OrderDetails({ params }) {
                             children: "Order Details"
                         }, void 0, false, {
                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                            lineNumber: 528,
+                            lineNumber: 530,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                    lineNumber: 514,
+                    lineNumber: 516,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -692,7 +694,7 @@ function OrderDetails({ params }) {
                                             children: order.customerName
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 535,
+                                            lineNumber: 537,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -706,7 +708,7 @@ function OrderDetails({ params }) {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 537,
+                                                    lineNumber: 539,
                                                     columnNumber: 17
                                                 }, this),
                                                 order.customerPhoneNumber && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -721,31 +723,31 @@ function OrderDetails({ params }) {
                                                                 d: "M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                lineNumber: 548,
+                                                                lineNumber: 550,
                                                                 columnNumber: 23
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                            lineNumber: 543,
+                                                            lineNumber: 545,
                                                             columnNumber: 21
                                                         }, this),
                                                         order.customerPhoneNumber
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 539,
+                                                    lineNumber: 541,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 536,
+                                            lineNumber: 538,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                    lineNumber: 534,
+                                    lineNumber: 536,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -757,13 +759,13 @@ function OrderDetails({ params }) {
                                     children: order.orderStatus
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                    lineNumber: 555,
+                                    lineNumber: 557,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                            lineNumber: 533,
+                            lineNumber: 535,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -776,7 +778,7 @@ function OrderDetails({ params }) {
                                             children: "Pickup Location"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 569,
+                                            lineNumber: 571,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -784,13 +786,13 @@ function OrderDetails({ params }) {
                                             children: order.pickup?.[0]?.fromAddress || 'N/A'
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 570,
+                                            lineNumber: 572,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                    lineNumber: 568,
+                                    lineNumber: 570,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -800,7 +802,7 @@ function OrderDetails({ params }) {
                                             children: "Dropoff Location"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 575,
+                                            lineNumber: 577,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -808,19 +810,19 @@ function OrderDetails({ params }) {
                                             children: order.dropOff?.[0]?.toAddress || 'N/A'
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 576,
+                                            lineNumber: 578,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                    lineNumber: 574,
+                                    lineNumber: 576,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                            lineNumber: 567,
+                            lineNumber: 569,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -830,7 +832,7 @@ function OrderDetails({ params }) {
                                     children: "Order Timeline"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                    lineNumber: 584,
+                                    lineNumber: 586,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -843,7 +845,7 @@ function OrderDetails({ params }) {
                                                     className: "w-2 h-2 rounded-full bg-[#FE5B18]"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 588,
+                                                    lineNumber: 590,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -854,13 +856,13 @@ function OrderDetails({ params }) {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 589,
+                                                    lineNumber: 591,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 587,
+                                            lineNumber: 589,
                                             columnNumber: 17
                                         }, this),
                                         order.orderPickedupTime && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -870,7 +872,7 @@ function OrderDetails({ params }) {
                                                     className: "w-2 h-2 rounded-full bg-[#FE5B18]"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 596,
+                                                    lineNumber: 598,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -881,13 +883,13 @@ function OrderDetails({ params }) {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 597,
+                                                    lineNumber: 599,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 595,
+                                            lineNumber: 597,
                                             columnNumber: 17
                                         }, this),
                                         order.orderOnmywayTime && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -897,7 +899,7 @@ function OrderDetails({ params }) {
                                                     className: "w-2 h-2 rounded-full bg-[#FE5B18]"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 604,
+                                                    lineNumber: 606,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -908,25 +910,25 @@ function OrderDetails({ params }) {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 605,
+                                                    lineNumber: 607,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 603,
+                                            lineNumber: 605,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                    lineNumber: 585,
+                                    lineNumber: 587,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                            lineNumber: 583,
+                            lineNumber: 585,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -942,7 +944,7 @@ function OrderDetails({ params }) {
                                                     children: "Delivery Price"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 617,
+                                                    lineNumber: 619,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -953,13 +955,13 @@ function OrderDetails({ params }) {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 618,
+                                                    lineNumber: 620,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 616,
+                                            lineNumber: 618,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -986,7 +988,7 @@ function OrderDetails({ params }) {
                                                                         strokeWidth: "4"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                        lineNumber: 632,
+                                                                        lineNumber: 634,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -995,20 +997,20 @@ function OrderDetails({ params }) {
                                                                         d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                        lineNumber: 633,
+                                                                        lineNumber: 635,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                lineNumber: 631,
+                                                                lineNumber: 633,
                                                                 columnNumber: 25
                                                             }, this),
                                                             "Picking Up..."
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                        lineNumber: 630,
+                                                        lineNumber: 632,
                                                         columnNumber: 23
                                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
                                                         children: [
@@ -1024,12 +1026,12 @@ function OrderDetails({ params }) {
                                                                     d: "M5 13l4 4L19 7"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                    lineNumber: 645,
+                                                                    lineNumber: 647,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                lineNumber: 639,
+                                                                lineNumber: 641,
                                                                 columnNumber: 25
                                                             }, this),
                                                             "Pickup"
@@ -1037,7 +1039,7 @@ function OrderDetails({ params }) {
                                                     }, void 0, true)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 624,
+                                                    lineNumber: 626,
                                                     columnNumber: 19
                                                 }, this),
                                                 order.orderStatus === 'Pickup' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1061,7 +1063,7 @@ function OrderDetails({ params }) {
                                                                         strokeWidth: "4"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                        lineNumber: 661,
+                                                                        lineNumber: 663,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -1070,20 +1072,20 @@ function OrderDetails({ params }) {
                                                                         d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                        lineNumber: 662,
+                                                                        lineNumber: 664,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                lineNumber: 660,
+                                                                lineNumber: 662,
                                                                 columnNumber: 25
                                                             }, this),
                                                             "Starting Delivery..."
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                        lineNumber: 659,
+                                                        lineNumber: 661,
                                                         columnNumber: 23
                                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
                                                         children: [
@@ -1099,12 +1101,12 @@ function OrderDetails({ params }) {
                                                                     d: "M13 10V3L4 14h7v7l9-11h-7z"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                    lineNumber: 674,
+                                                                    lineNumber: 676,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                lineNumber: 668,
+                                                                lineNumber: 670,
                                                                 columnNumber: 25
                                                             }, this),
                                                             "Deliver Item"
@@ -1112,7 +1114,7 @@ function OrderDetails({ params }) {
                                                     }, void 0, true)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 653,
+                                                    lineNumber: 655,
                                                     columnNumber: 19
                                                 }, this),
                                                 order.orderStatus === 'OnTheWay' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1131,19 +1133,19 @@ function OrderDetails({ params }) {
                                                                 d: "M5 13l4 4L19 7"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                lineNumber: 692,
+                                                                lineNumber: 694,
                                                                 columnNumber: 23
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                            lineNumber: 686,
+                                                            lineNumber: 688,
                                                             columnNumber: 21
                                                         }, this),
                                                         "Drop off"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 682,
+                                                    lineNumber: 684,
                                                     columnNumber: 19
                                                 }, this),
                                                 order.orderStatus !== 'Delivered' && order.orderStatus !== 'Cancelled' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1159,7 +1161,7 @@ function OrderDetails({ params }) {
                                                                     d: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.88-2.88 7.19-5 9.88C9.92 16.21 7 11.85 7 9z"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                    lineNumber: 707,
+                                                                    lineNumber: 709,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
@@ -1168,32 +1170,32 @@ function OrderDetails({ params }) {
                                                                     r: "2.5"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                    lineNumber: 708,
+                                                                    lineNumber: 710,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                            lineNumber: 702,
+                                                            lineNumber: 704,
                                                             columnNumber: 21
                                                         }, this),
                                                         "Show Route"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 698,
+                                                    lineNumber: 700,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 622,
+                                            lineNumber: 624,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                    lineNumber: 615,
+                                    lineNumber: 617,
                                     columnNumber: 13
                                 }, this),
                                 showDropoffOtp && order.orderStatus === 'OnTheWay' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1204,7 +1206,7 @@ function OrderDetails({ params }) {
                                             children: "Verify Drop off"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 719,
+                                            lineNumber: 721,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1212,7 +1214,7 @@ function OrderDetails({ params }) {
                                             children: "Enter the 4-digit code provided by the customer to complete the delivery."
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 720,
+                                            lineNumber: 722,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -1233,12 +1235,12 @@ function OrderDetails({ params }) {
                                                         disabled: isVerifyingDropoff
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                        lineNumber: 725,
+                                                        lineNumber: 727,
                                                         columnNumber: 21
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 724,
+                                                    lineNumber: 726,
                                                     columnNumber: 19
                                                 }, this),
                                                 error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1246,7 +1248,7 @@ function OrderDetails({ params }) {
                                                     children: error
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 740,
+                                                    lineNumber: 742,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1273,7 +1275,7 @@ function OrderDetails({ params }) {
                                                                                 strokeWidth: "4"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                                lineNumber: 754,
+                                                                                lineNumber: 756,
                                                                                 columnNumber: 29
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -1282,25 +1284,25 @@ function OrderDetails({ params }) {
                                                                                 d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                                lineNumber: 755,
+                                                                                lineNumber: 757,
                                                                                 columnNumber: 29
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                        lineNumber: 753,
+                                                                        lineNumber: 755,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     "Verifying..."
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                                lineNumber: 752,
+                                                                lineNumber: 754,
                                                                 columnNumber: 25
                                                             }, this) : 'Verify & Complete Delivery'
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                            lineNumber: 746,
+                                                            lineNumber: 748,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1311,25 +1313,25 @@ function OrderDetails({ params }) {
                                                             children: "Cancel"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                            lineNumber: 761,
+                                                            lineNumber: 763,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 745,
+                                                    lineNumber: 747,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                            lineNumber: 723,
+                                            lineNumber: 725,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                    lineNumber: 718,
+                                    lineNumber: 720,
                                     columnNumber: 15
                                 }, this),
                                 showSuccess && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1351,17 +1353,17 @@ function OrderDetails({ params }) {
                                                         d: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                        lineNumber: 785,
+                                                        lineNumber: 787,
                                                         columnNumber: 23
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                    lineNumber: 779,
+                                                    lineNumber: 781,
                                                     columnNumber: 21
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                lineNumber: 778,
+                                                lineNumber: 780,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -1369,7 +1371,7 @@ function OrderDetails({ params }) {
                                                 children: "Delivery Completed!"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                lineNumber: 793,
+                                                lineNumber: 795,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1377,41 +1379,41 @@ function OrderDetails({ params }) {
                                                 children: "The order has been successfully delivered."
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                                lineNumber: 794,
+                                                lineNumber: 796,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                        lineNumber: 777,
+                                        lineNumber: 779,
                                         columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                                    lineNumber: 776,
+                                    lineNumber: 778,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/orders/[id]/page.tsx",
-                            lineNumber: 614,
+                            lineNumber: 616,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/orders/[id]/page.tsx",
-                    lineNumber: 531,
+                    lineNumber: 533,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/orders/[id]/page.tsx",
-            lineNumber: 513,
+            lineNumber: 515,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/app/orders/[id]/page.tsx",
-        lineNumber: 512,
+        lineNumber: 514,
         columnNumber: 5
     }, this);
 }

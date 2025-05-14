@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { use } from 'react';
 
 interface Order {
   id: string;
@@ -61,7 +62,8 @@ const STATUS_COLORS = {
   }
 } as const;
 
-export default function OrderDetails({ params }: { params: { id: string } }) {
+export default function OrderDetails({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -103,7 +105,7 @@ export default function OrderDetails({ params }: { params: { id: string } }) {
 
         // Fetch order details
         const response = await fetch(
-          `https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table/${params.id}`,
+          `https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table/${id}`,
           {
             headers: {
               'X-Xano-Authorization': `Bearer ${authToken}`,
@@ -126,7 +128,7 @@ export default function OrderDetails({ params }: { params: { id: string } }) {
     };
 
     fetchOrderDetails();
-  }, [params.id, router]);
+  }, [id, router]);
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
