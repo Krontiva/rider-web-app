@@ -377,33 +377,6 @@ export default function OrderDetails({ params }: { params: Promise<{ id: string 
     }
   };
 
-  const handleResendDropoffOtp = async () => {
-    setError('');
-    setIsVerifyingDropoff(true);
-
-    try {
-      const response = await fetch('https://api-server.krontiva.africa/api:uEBBwbSs/auth/login/phoneNumber/rider', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          phoneNumber: order?.customerPhoneNumber
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to resend OTP');
-      }
-
-      alert('OTP resent successfully');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to resend OTP');
-    } finally {
-      setIsVerifyingDropoff(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-white p-4">

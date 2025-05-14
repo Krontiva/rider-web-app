@@ -66,10 +66,9 @@ const STATUS_COLORS = {
 
 interface OrderCardProps {
   order: Order & { batchedOrders?: Order[] };
-  onRefresh: () => void;
 }
 
-const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
+const OrderCard = ({ order }: OrderCardProps) => {
   const router = useRouter();
 
   const getStatusColors = (status: string) => {
@@ -270,7 +269,6 @@ export default function Orders() {
 
       const userData = await userResponse.json();
       const courierName = userData.fullName; // Assuming the API returns fullName
-      console.log('Courier Name:', courierName);
 
       // Fetch orders
       const ordersResponse = await fetch('https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table', {
@@ -284,18 +282,16 @@ export default function Orders() {
       }
 
       const allOrders = await ordersResponse.json();
-      console.log('All Orders:', allOrders);
       
       // Filter orders by courierName
       const filteredOrders = allOrders.filter((order: Order) => 
         order.courierName === courierName
       );
-      console.log('Filtered Orders:', filteredOrders);
 
       setOrders(filteredOrders);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load orders');
-      console.error('Error fetching orders:', err);
+
     } finally {
       setLoading(false);
     }
@@ -349,7 +345,6 @@ export default function Orders() {
   // Update the getFilteredOrders function
   const getFilteredOrders = () => {
     let filteredOrders = orders;
-    console.log('Initial Orders:', filteredOrders);
     
     // First filter by status
     switch (activeTab) {
@@ -363,7 +358,7 @@ export default function Orders() {
         filteredOrders = orders.filter(order => order.orderStatus === 'Cancelled');
         break;
     }
-    console.log('After Status Filter:', filteredOrders);
+
 
     // Then filter by order type
     switch (orderType) {
@@ -377,19 +372,16 @@ export default function Orders() {
         // 'All' - no additional filtering needed
         break;
     }
-    console.log('After Type Filter:', filteredOrders);
 
     return groupOrdersByBatch(filteredOrders);
   };
 
   const filteredOrders = getFilteredOrders();
-  console.log('Final Filtered Orders:', filteredOrders);
   
   // Calculate pagination
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
-  console.log('Paginated Orders:', paginatedOrders);
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -535,8 +527,7 @@ export default function Orders() {
           {paginatedOrders.map((order) => (
             <OrderCard 
               key={order.id} 
-              order={order} 
-              onRefresh={fetchOrders}
+              order={order}
             />
           ))}
         </div>
