@@ -27,6 +27,7 @@ interface Order {
 }
 
 type FilterType = 'Pending' | 'Complete' | 'Cancelled';
+type OrderType = 'All' | 'Batched' | 'Single';
 
 const STATUS_COLORS = {
   ReadyForPickup: {
@@ -69,230 +70,27 @@ interface OrderCardProps {
 }
 
 const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
-  const [isCompleting, setIsCompleting] = useState(false);
-  const [isCancelling, setIsCancelling] = useState(false);
+  const router = useRouter();
 
   const getStatusColors = (status: string) => {
     return STATUS_COLORS[status as keyof typeof STATUS_COLORS] || STATUS_COLORS.ReadyForPickup;
-  };
-
-  const handleViewDetails = () => {
-    if (order.batchID && order.batchedOrders) {
-      // Get pickup location
-      const origin = encodeURIComponent(order.pickup?.[0]?.fromAddress || '');
-      
-      // Sort orders by sequence if available, otherwise keep original order
-      const sortedOrders = [...order.batchedOrders].sort((a, b) => {
-        // If you have a sequence number in your order data, use that
-        return (a.batchedOrderNumbers?.[0] || 0) - (b.batchedOrderNumbers?.[0] || 0);
-      });
-
-      // Get all dropoff points
-      const destinations = sortedOrders.map(o => 
-        encodeURIComponent(o.dropOff?.[0]?.toAddress || '')
-      );
-
-      // Create waypoints string (excluding last destination)
-      const waypoints = destinations.slice(0, -1)
-        .map(dest => `via:${dest}`)
-        .join('|');
-
-      // Last address is the final destination
-      const finalDestination = destinations[destinations.length - 1];
-      
-      // Construct Google Maps URL with optimized route
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${finalDestination}${waypoints ? `&waypoints=${waypoints}&optimize=true` : ''}`;
-      
-      window.open(url, '_blank');
-    } else {
-      // Regular single order route
-      const origin = encodeURIComponent(order.pickup?.[0]?.fromAddress || '');
-      const destination = encodeURIComponent(order.dropOff?.[0]?.toAddress || '');
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
-      window.open(url, '_blank');
-    }
-  };
-
-  const handleComplete = async () => {
-    try {
-      setIsCompleting(true);
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) return;
-
-      const response = await fetch(
-        `https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table/${order.id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Xano-Authorization': `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({
-            completed: true,
-            orderCompletedTime: new Date().toISOString(),
-            orderStatus: 'Delivered',
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to update order status');
-      }
-
-      // If this is a batch order, update all orders with same batchID
-      if (order.batchID && order.batchedOrders) {
-        await Promise.all(
-          order.batchedOrders.map(async (batchOrder) => {
-            if (batchOrder.id !== order.id) {
-              await fetch(
-                `https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table/${batchOrder.id}`,
-                {
-                  method: 'PATCH',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'X-Xano-Authorization': `Bearer ${authToken}`,
-                  },
-                  body: JSON.stringify({
-                    completed: true,
-                    orderCompletedTime: new Date().toISOString(),
-                    orderStatus: 'Delivered',
-                  }),
-                }
-              );
-            }
-          })
-        );
-      }
-
-      // Refresh orders list
-      onRefresh();
-
-    } catch (error) {
-      console.error('Error updating order:', error);
-      alert('Failed to update order status');
-    } finally {
-      setIsCompleting(false);
-    }
-  };
-
-  const handleCancel = async () => {
-    try {
-      setIsCancelling(true);
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken) return;
-
-      const response = await fetch(
-        `https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table/${order.id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Xano-Authorization': `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({
-            completed: false,
-            orderStatus: 'Cancelled',
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to cancel order');
-      }
-
-      // If this is a batch order, cancel all orders with same batchID
-      if (order.batchID && order.batchedOrders) {
-        await Promise.all(
-          order.batchedOrders.map(async (batchOrder) => {
-            if (batchOrder.id !== order.id) {
-              await fetch(
-                `https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table/${batchOrder.id}`,
-                {
-                  method: 'PATCH',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'X-Xano-Authorization': `Bearer ${authToken}`,
-                  },
-                  body: JSON.stringify({
-                    completed: false,
-                    orderStatus: 'Cancelled',
-                  }),
-                }
-              );
-            }
-          })
-        );
-      }
-
-      onRefresh();
-    } catch (error) {
-      console.error('Error canceling order:', error);
-      alert('Failed to cancel order');
-    } finally {
-      setIsCancelling(false);
-    }
   };
 
   const handleCall = (phoneNumber: string) => {
     window.location.href = `tel:${phoneNumber}`;
   };
 
-  const actionButtons = (
-    <div className="flex items-center gap-2">
-      <button 
-        className="text-white font-medium flex items-center bg-[#FE5B18] px-4 py-2 rounded-md hover:bg-[#e54d0e] disabled:opacity-50"
-        onClick={handleComplete}
-        disabled={isCompleting || isCancelling}
-      >
-        {isCompleting ? (
-          <svg className="animate-spin h-4 w-4 mr-1" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-        ) : (
-          <svg 
-            className="w-4 h-4 mr-1" 
-            fill="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        )}
-        {isCompleting ? 'Completing...' : 'Complete'}
-      </button>
-      <button 
-        className="text-white font-medium flex items-center bg-black px-4 py-2 rounded-md hover:bg-gray-800 disabled:opacity-50"
-        onClick={handleCancel}
-        disabled={isCompleting || isCancelling}
-      >
-        {isCancelling ? (
-          <svg className="animate-spin h-4 w-4 mr-1" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-        ) : (
-          <svg 
-            className="w-4 h-4 mr-1" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        )}
-        {isCancelling ? 'Cancelling...' : 'Cancel'}
-      </button>
-    </div>
-  );
-
   if (order.batchID && order.batchedOrders) {
     // Calculate total amount from all orders in the batch
     const totalAmount = order.batchedOrders.reduce((sum, batchOrder) => 
       sum + (Number(batchOrder.deliveryPrice) || 0), 
-    0).toFixed(2);  // Add toFixed(2) for proper decimal formatting
+    0).toFixed(2);
 
     return (
-      <div className="bg-[#FFF8E1] p-4 rounded-lg shadow mb-4">
+      <div 
+        onClick={() => router.push(`/orders/${order.id}`)}
+        className="bg-[#FFF8E1] p-4 rounded-lg shadow mb-4 cursor-pointer hover:shadow-md transition-shadow duration-200"
+      >
         <div className="flex justify-between items-start mb-4">
           <div>
             <h3 className="text-xl font-semibold">Batched</h3>
@@ -324,7 +122,10 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
                     </p>
                     {batchedOrder.customerPhoneNumber && (
                       <button 
-                        onClick={() => handleCall(batchedOrder.customerPhoneNumber)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCall(batchedOrder.customerPhoneNumber);
+                        }}
                         className="text-[#FE5B18] text-sm flex items-center mt-1"
                       >
                         <svg 
@@ -364,40 +165,29 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
           <span className="text-lg font-bold text-black">
             {totalAmount} GHS
           </span>
-          {order.orderStatus !== 'Delivered' && order.orderStatus !== 'Cancelled' && (
-            <div className="flex items-center gap-4">
-              <button 
-                className="text-[#FE5B18] font-medium flex items-center"
-                onClick={handleViewDetails}
-              >
-                <svg 
-                  className="w-4 h-4 mr-1" 
-                  fill="currentColor" 
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.88-2.88 7.19-5 9.88C9.92 16.21 7 11.85 7 9z"/>
-                  <circle cx="12" cy="9" r="2.5"/>
-                </svg>
-                Show Route
-              </button>
-              {actionButtons}
-            </div>
-          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow mb-4">
+    <div 
+      onClick={() => router.push(`/orders/${order.id}`)}
+      className="bg-white p-4 rounded-lg shadow mb-4 cursor-pointer hover:shadow-md transition-shadow duration-200"
+    >
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="text-lg font-semibold text-black">{order.customerName}</h3>
           <div className="flex items-center gap-3">
-            <p className="text-gray-500 text-sm">#{String(order.orderNumber).padStart(3, '0')}</p>
+            <span className="text-gray-500 text-sm">
+              #{String(order.orderNumber).padStart(3, '0')}
+            </span>
             {order.customerPhoneNumber && (
               <button 
-                onClick={() => handleCall(order.customerPhoneNumber)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCall(order.customerPhoneNumber);
+                }}
                 className="text-[#FE5B18] text-sm flex items-center"
               >
                 <svg 
@@ -442,25 +232,6 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
         <span className="text-lg font-bold text-black">
           {(order.deliveryPrice || 0)} GHS
         </span>
-        {order.orderStatus !== 'Delivered' && order.orderStatus !== 'Cancelled' && (
-          <div className="flex items-center gap-4">
-            <button 
-              className="text-[#FE5B18] font-medium flex items-center"
-              onClick={handleViewDetails}
-            >
-              <svg 
-                className="w-4 h-4 mr-1" 
-                fill="currentColor" 
-                viewBox="0 0 20 20"
-              >
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.88-2.88 7.19-5 9.88C9.92 16.21 7 11.85 7 9z"/>
-                <circle cx="12" cy="9" r="2.5"/>
-              </svg>
-              Show Route
-            </button>
-            {actionButtons}
-          </div>
-        )}
       </div>
     </div>
   );
@@ -468,9 +239,12 @@ const OrderCard = ({ order, onRefresh }: OrderCardProps) => {
 
 export default function Orders() {
   const [activeTab, setActiveTab] = useState<FilterType>('Pending');
+  const [orderType, setOrderType] = useState<OrderType>('All');
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const router = useRouter();
 
   const fetchOrders = useCallback(async () => {
@@ -573,6 +347,7 @@ export default function Orders() {
   const getFilteredOrders = () => {
     let filteredOrders = orders;
     
+    // First filter by status
     switch (activeTab) {
       case 'Pending':
         filteredOrders = orders.filter(order => order.orderStatus === 'Assigned');
@@ -585,11 +360,40 @@ export default function Orders() {
         break;
     }
 
+    // Then filter by order type
+    switch (orderType) {
+      case 'Batched':
+        filteredOrders = filteredOrders.filter(order => order.batchID);
+        break;
+      case 'Single':
+        filteredOrders = filteredOrders.filter(order => !order.batchID);
+        break;
+      default:
+        // 'All' - no additional filtering needed
+        break;
+    }
+
     return groupOrdersByBatch(filteredOrders);
   };
 
   const filteredOrders = getFilteredOrders();
   
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, orderType]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of orders list
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSignOut = () => {
     localStorage.removeItem('authToken');
     router.push('/');
@@ -624,8 +428,8 @@ export default function Orders() {
           </button>
         </div>
         
-        {/* Update tabs container padding */}
-        <div className="flex gap-4 md:gap-6 border-b mb-6 overflow-x-auto pb-2">
+        {/* Status Tabs */}
+        <div className="flex gap-4 md:gap-6 border-b mb-4 overflow-x-auto pb-2">
           {(['Pending', 'Complete', 'Cancelled'] as FilterType[]).map((tab) => (
             <button
               key={tab}
@@ -648,9 +452,79 @@ export default function Orders() {
           ))}
         </div>
 
-        {/* Update cards container spacing */}
+        {/* Order Type Filters and Pagination */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex gap-4">
+            {(['All', 'Batched', 'Single'] as OrderType[]).map((type) => (
+              <button
+                key={type}
+                onClick={() => setOrderType(type)}
+                className={`px-4 py-2 rounded-full text-sm font-medium ${
+                  orderType === type
+                    ? 'bg-[#FE5B18] text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-full text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:hover:bg-transparent"
+              >
+                <svg 
+                  className="w-5 h-5" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`w-8 h-8 rounded-full text-sm font-medium ${
+                      currentPage === page
+                        ? 'bg-[#FE5B18] text-white'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-full text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:hover:bg-transparent"
+              >
+                <svg 
+                  className="w-5 h-5" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Orders List */}
         <div className="space-y-4 md:space-y-6">
-          {filteredOrders.map((order) => (
+          {paginatedOrders.map((order) => (
             <OrderCard 
               key={order.id} 
               order={order} 
@@ -658,6 +532,13 @@ export default function Orders() {
             />
           ))}
         </div>
+
+        {/* No Orders Message */}
+        {paginatedOrders.length === 0 && !loading && (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No orders found</p>
+          </div>
+        )}
       </div>
     </div>
   );
