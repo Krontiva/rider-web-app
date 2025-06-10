@@ -637,9 +637,9 @@ function PricingPreferences({ open, onOpenChange }) {
                         0
                     ];
                     let lat = parseFloat(match[1]);
-                    let latDir = match[2];
+                    const latDir = match[2];
                     let lon = parseFloat(match[3]);
-                    let lonDir = match[4];
+                    const lonDir = match[4];
                     if (latDir === 'S') lat = -lat;
                     if (lonDir === 'W') lon = -lon;
                     return [
@@ -1051,9 +1051,9 @@ function PricingPreferences({ open, onOpenChange }) {
                                                 0
                                             ];
                                             let lat = parseFloat(match[1]);
-                                            let latDir = match[2];
+                                            const latDir = match[2];
                                             let lon = parseFloat(match[3]);
-                                            let lonDir = match[4];
+                                            const lonDir = match[4];
                                             if (latDir === 'S') lat = -lat;
                                             if (lonDir === 'W') lon = -lon;
                                             return [

@@ -513,6 +513,10 @@ body {
   height: 100%;
 }
 
+.h-12 {
+  height: 3rem;
+}
+
 .max-h-\[80vh\] {
   max-height: 80vh;
 }
@@ -551,6 +555,10 @@ body {
 
 .w-full {
   width: 100%;
+}
+
+.w-auto {
+  width: auto;
 }
 
 .max-w-2xl {
