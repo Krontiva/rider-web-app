@@ -37,7 +37,16 @@ interface PriceSubmission {
     price: number;
     currency: string;
     amountInWords: string;
+    distance?: number;
   }[];
+}
+
+interface StandardPrice {
+  name: string;
+  price: number;
+  currency: string;
+  amountInWords: string;
+  distance?: number | string;
 }
 
 const initialRoutes: Route[] = [
@@ -197,6 +206,20 @@ function numberToWords(num: number): string {
   return result.trim();
 }
 
+// Haversine formula to calculate distance between two lat/lng points in kilometers
+function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const R = 6371; // Earth radius in km
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 export default function PricingPreferences({ open, onOpenChange }: PricingPreferencesProps) {
   const [routes, setRoutes] = useState<Route[]>(initialRoutes);
   const [currentStep, setCurrentStep] = useState(0);
@@ -205,6 +228,7 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
   const [userId, setUserId] = useState<string | null>(null);
   const [userPricing, setUserPricing] = useState<PriceSubmission | null>(null);
   const [showStepper, setShowStepper] = useState(false);
+  const [standardPrices, setStandardPrices] = useState<StandardPrice[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -243,6 +267,15 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
         }
 
         const pricingData: PriceSubmission[] = await pricingResponse.json();
+
+        // Fetch standard prices
+        const standardRes = await fetch('https://api-server.krontiva.africa/api:uEBBwbSs/delikeriderpricing/fe8ce25f-7990-431b-ade9-dd0f167157e9');
+        if (standardRes.ok) {
+          const standardData = await standardRes.json();
+          setStandardPrices(Array.isArray(standardData.prices) ? standardData.prices : []);
+        } else {
+          setStandardPrices([]);
+        }
 
         // Find this user's pricing submission
         const userPricingSubmission = pricingData.find(p => p.delika_user_table_id === userData.id) || null;
@@ -326,12 +359,31 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
         return;
       }
 
-      const prices = routes.map(route => ({
-        name: `${route.pickup.name} to ${route.dropoff.name}`,
-        price: parseFloat(route.userPrice) || 0,
-        currency: "GHS",
-        amountInWords: `${numberToWords(parseFloat(route.userPrice) || 0)} Ghana cedis`
-      }));
+      const prices = routes.map(route => {
+        // Parse coordinates
+        const parseCoord = (coord: string) => {
+          // Example: "5.6764° N, -0.1775° W"
+          const match = coord.match(/([\d.]+)°\s*([NS]),\s*([\-\d.]+)°\s*([EW])/);
+          if (!match) return [0, 0];
+          let lat = parseFloat(match[1]);
+          let latDir = match[2];
+          let lon = parseFloat(match[3]);
+          let lonDir = match[4];
+          if (latDir === 'S') lat = -lat;
+          if (lonDir === 'W') lon = -lon;
+          return [lat, lon];
+        };
+        const [pickupLat, pickupLon] = parseCoord(route.pickup.coordinates);
+        const [dropoffLat, dropoffLon] = parseCoord(route.dropoff.coordinates);
+        const distance = haversineDistance(pickupLat, pickupLon, dropoffLat, dropoffLon);
+        return {
+          name: `${route.pickup.name} to ${route.dropoff.name}`,
+          price: parseFloat(route.userPrice) || 0,
+          currency: "GHS",
+          amountInWords: `${numberToWords(parseFloat(route.userPrice) || 0)} Ghana cedis`,
+          distance: Number(distance.toFixed(2)),
+        };
+      });
 
       let response;
       if (userPricing) {
@@ -366,9 +418,7 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
         throw new Error('Failed to submit prices');
       }
 
-      // After success, close stepper and refresh modal state
       setShowStepper(false);
-      // Optionally, you can refetch user pricing here for instant update
       onOpenChange(false);
       router.push('/orders');
     } catch (error) {
@@ -386,7 +436,7 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
   if (isLoading) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto">
           <VisuallyHidden>
             <DialogTitle>Set Your Preferred Route Prices</DialogTitle>
           </VisuallyHidden>
@@ -402,7 +452,7 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
   if (!userPricing && !showStepper) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[425px] flex flex-col items-center justify-center">
+        <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto flex flex-col items-center justify-center">
           <DialogTitle>Zone Pricing</DialogTitle>
           <p className="text-center text-gray-600 mb-4">You have not set any zone pricing yet.</p>
           <button
@@ -420,7 +470,7 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
   if (userPricing && !showStepper) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto">
           <DialogTitle>Your Zone Pricing</DialogTitle>
           <div className="divide-y divide-gray-200 my-4">
             {userPricing.prices.map((price, idx) => (
@@ -428,6 +478,18 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
                 <span className="font-medium text-gray-900">{price.name}</span>
                 <span className="text-sm text-gray-600">GHS {price.price.toFixed(2)}</span>
                 <span className="text-xs text-gray-400">{price.amountInWords}</span>
+                {typeof price.distance === 'number' && (
+                  <span className="text-xs text-gray-500">Distance: {price.distance.toFixed(2)} km</span>
+                )}
+                {(() => {
+                  const std = standardPrices.find(p => p.name === price.name);
+                  if (std) {
+                    return (
+                      <span className="text-xs text-blue-600">Standard: GHS {std.price} ({typeof std.distance === 'string' ? std.distance : std.distance?.toFixed(2)} km)</span>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             ))}
           </div>
@@ -445,14 +507,14 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
   // Otherwise, show the stepper as before
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto">
+        {/* Header */}
         <DialogHeader>
           <DialogTitle>Set Your Preferred Route Prices</DialogTitle>
           <DialogDescription>
             Step {currentStep + 1} of {routes.length}
           </DialogDescription>
         </DialogHeader>
-
         {/* Progress bar */}
         <div className="w-full bg-gray-200 h-2 rounded-full mb-4">
           <div
@@ -461,47 +523,89 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
           />
         </div>
 
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-2">
-              <div className="space-y-1">
-                <Label className="font-semibold">Pickup</Label>
-                <p className="text-sm text-gray-600">{currentRoute.pickup.name}</p>
-              </div>
-              <div className="space-y-1">
-                <Label className="font-semibold">Dropoff</Label>
-                <p className="text-sm text-gray-600">{currentRoute.dropoff.name}</p>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="price">Your Price (GHS)</Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                min="0"
-                value={currentRoute.userPrice}
-                onChange={(e) => handlePriceChange(currentRoute.id, e.target.value)}
-                placeholder="Enter your preferred price"
-                className="w-full"
-              />
-              {currentRoute.averagePrice !== null && (
-                <p className="text-sm text-gray-600 mt-1">
-                  Average Price: GHS {currentRoute.averagePrice.toFixed(2)}
-                </p>
-              )}
-            </div>
+        {/* Row 1: Pickup & Dropoff */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-2">
+          <div className="flex-1 space-y-1">
+            <Label className="font-semibold">Pickup</Label>
+            <p className="text-sm text-gray-600">{currentRoute.pickup.name}</p>
+            <p className="text-xs text-gray-500">{currentRoute.pickup.coordinates}</p>
+          </div>
+          <div className="flex-1 space-y-1">
+            <Label className="font-semibold">Dropoff</Label>
+            <p className="text-sm text-gray-600">{currentRoute.dropoff.name}</p>
+            <p className="text-xs text-gray-500">{currentRoute.dropoff.coordinates}</p>
           </div>
         </div>
 
+        {/* Row 2: Distance & Average Price */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-2">
+          <div className="flex-1 space-y-1">
+            <Label className="font-semibold">Distance</Label>
+            <p className="text-sm text-gray-600">
+              {(() => {
+                const parseCoord = (coord: string) => {
+                  const match = coord.match(/([\d.]+)°\s*([NS]),\s*([\-\d.]+)°\s*([EW])/);
+                  if (!match) return [0, 0];
+                  let lat = parseFloat(match[1]);
+                  let latDir = match[2];
+                  let lon = parseFloat(match[3]);
+                  let lonDir = match[4];
+                  if (latDir === 'S') lat = -lat;
+                  if (lonDir === 'W') lon = -lon;
+                  return [lat, lon];
+                };
+                const [pickupLat, pickupLon] = parseCoord(currentRoute.pickup.coordinates);
+                const [dropoffLat, dropoffLon] = parseCoord(currentRoute.dropoff.coordinates);
+                const distance = haversineDistance(pickupLat, pickupLon, dropoffLat, dropoffLon);
+                return `${distance.toFixed(2)} km`;
+              })()}
+            </p>
+          </div>
+          <div className="flex-1 space-y-1">
+            <Label className="font-semibold">Average Price</Label>
+            <p className="text-sm text-gray-600 mt-1">
+              {currentRoute.averagePrice !== null
+                ? `GHS ${currentRoute.averagePrice.toFixed(2)}`
+                : 'Not available'}
+            </p>
+            {/* Standard price (optional, can be commented out if not needed) */}
+            {(() => {
+              const std = standardPrices.find(p => p.name === `${currentRoute.pickup.name} to ${currentRoute.dropoff.name}`);
+              if (std) {
+                return (
+                  <span className="text-xs text-blue-600 block">
+                    Standard: GHS {std.price} ({typeof std.distance === 'string' ? std.distance : std.distance?.toFixed(2)} km)
+                  </span>
+                );
+              }
+              return null;
+            })()}
+          </div>
+        </div>
+
+        {/* Row 3: Your Price (GHS) */}
+        <div className="mb-4">
+          <Label htmlFor="price">Your Price (GHS)</Label>
+          <Input
+            id="price"
+            type="number"
+            step="0.01"
+            min="0"
+            value={currentRoute.userPrice}
+            onChange={(e) => handlePriceChange(currentRoute.id, e.target.value)}
+            placeholder="Enter your preferred price"
+            className="w-full"
+          />
+        </div>
+
+        {/* Footer: Previous/Next/Submit */}
         <DialogFooter className="flex justify-between mt-6">
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full">
             <button
               type="button"
               onClick={handlePrevious}
               disabled={currentStep === 0}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18] disabled:opacity-50"
+              className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18] disabled:opacity-50"
             >
               Previous
             </button>
@@ -509,7 +613,7 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#FE5B18] rounded-md hover:bg-[#e54d0e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18]"
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#FE5B18] rounded-md hover:bg-[#e54d0e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18]"
               >
                 Next
               </button>
@@ -518,7 +622,7 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#FE5B18] rounded-md hover:bg-[#e54d0e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18] disabled:opacity-50"
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#FE5B18] rounded-md hover:bg-[#e54d0e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18] disabled:opacity-50"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit All'}
               </button>

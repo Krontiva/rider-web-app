@@ -129,6 +129,9 @@ export default function Home() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="max-w-md w-full space-y-8 p-4 md:p-8">
+        <div className="flex justify-center mb-2">
+          <img src="/logo.png" alt="Delika Rider Logo" className="h-12 w-auto" />
+        </div>
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold text-black">
             {showOtpInput ? 'Enter Verification Code' : 'Sign in to your account'}

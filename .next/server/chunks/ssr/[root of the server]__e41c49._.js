@@ -467,6 +467,16 @@ function numberToWords(num) {
     }
     return result.trim();
 }
+// Haversine formula to calculate distance between two lat/lng points in kilometers
+function haversineDistance(lat1, lon1, lat2, lon2) {
+    const toRad = (value)=>value * Math.PI / 180;
+    const R = 6371; // Earth radius in km
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
 function PricingPreferences({ open, onOpenChange }) {
     const [routes, setRoutes] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(initialRoutes);
     const [currentStep, setCurrentStep] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(0);
@@ -475,6 +485,7 @@ function PricingPreferences({ open, onOpenChange }) {
     const [userId, setUserId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [userPricing, setUserPricing] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [showStepper, setShowStepper] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [standardPrices, setStandardPrices] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         const fetchUserDetailsAndPrices = async ()=>{
@@ -506,6 +517,14 @@ function PricingPreferences({ open, onOpenChange }) {
                     throw new Error('Failed to fetch pricing data');
                 }
                 const pricingData = await pricingResponse.json();
+                // Fetch standard prices
+                const standardRes = await fetch('https://api-server.krontiva.africa/api:uEBBwbSs/delikeriderpricing/fe8ce25f-7990-431b-ade9-dd0f167157e9');
+                if (standardRes.ok) {
+                    const standardData = await standardRes.json();
+                    setStandardPrices(Array.isArray(standardData.prices) ? standardData.prices : []);
+                } else {
+                    setStandardPrices([]);
+                }
                 // Find this user's pricing submission
                 const userPricingSubmission = pricingData.find((p)=>p.delika_user_table_id === userData.id) || null;
                 setUserPricing(userPricingSubmission);
@@ -582,12 +601,37 @@ function PricingPreferences({ open, onOpenChange }) {
                 router.push('/');
                 return;
             }
-            const prices = routes.map((route)=>({
+            const prices = routes.map((route)=>{
+                // Parse coordinates
+                const parseCoord = (coord)=>{
+                    // Example: "5.6764° N, -0.1775° W"
+                    const match = coord.match(/([\d.]+)°\s*([NS]),\s*([\-\d.]+)°\s*([EW])/);
+                    if (!match) return [
+                        0,
+                        0
+                    ];
+                    let lat = parseFloat(match[1]);
+                    let latDir = match[2];
+                    let lon = parseFloat(match[3]);
+                    let lonDir = match[4];
+                    if (latDir === 'S') lat = -lat;
+                    if (lonDir === 'W') lon = -lon;
+                    return [
+                        lat,
+                        lon
+                    ];
+                };
+                const [pickupLat, pickupLon] = parseCoord(route.pickup.coordinates);
+                const [dropoffLat, dropoffLon] = parseCoord(route.dropoff.coordinates);
+                const distance = haversineDistance(pickupLat, pickupLon, dropoffLat, dropoffLon);
+                return {
                     name: `${route.pickup.name} to ${route.dropoff.name}`,
                     price: parseFloat(route.userPrice) || 0,
                     currency: "GHS",
-                    amountInWords: `${numberToWords(parseFloat(route.userPrice) || 0)} Ghana cedis`
-                }));
+                    amountInWords: `${numberToWords(parseFloat(route.userPrice) || 0)} Ghana cedis`,
+                    distance: Number(distance.toFixed(2))
+                };
+            });
             let response;
             if (userPricing) {
                 // PATCH to update existing pricing
@@ -617,9 +661,7 @@ function PricingPreferences({ open, onOpenChange }) {
             if (!response.ok) {
                 throw new Error('Failed to submit prices');
             }
-            // After success, close stepper and refresh modal state
             setShowStepper(false);
-            // Optionally, you can refetch user pricing here for instant update
             onOpenChange(false);
             router.push('/orders');
         } catch (error) {
@@ -637,19 +679,19 @@ function PricingPreferences({ open, onOpenChange }) {
             open: open,
             onOpenChange: onOpenChange,
             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogContent"], {
-                className: "sm:max-w-[425px]",
+                className: "sm:max-w-[425px] max-h-[80vh] overflow-y-auto",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$visually$2d$hidden$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["VisuallyHidden"], {
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogTitle"], {
                             children: "Set Your Preferred Route Prices"
                         }, void 0, false, {
                             fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                            lineNumber: 391,
+                            lineNumber: 441,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                        lineNumber: 390,
+                        lineNumber: 440,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -658,23 +700,23 @@ function PricingPreferences({ open, onOpenChange }) {
                             className: "animate-spin rounded-full h-8 w-8 border-b-2 border-[#FE5B18]"
                         }, void 0, false, {
                             fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                            lineNumber: 394,
+                            lineNumber: 444,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                        lineNumber: 393,
+                        lineNumber: 443,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                lineNumber: 389,
+                lineNumber: 439,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/app/components/PricingPreferences.tsx",
-            lineNumber: 388,
+            lineNumber: 438,
             columnNumber: 7
         }, this);
     }
@@ -684,13 +726,13 @@ function PricingPreferences({ open, onOpenChange }) {
             open: open,
             onOpenChange: onOpenChange,
             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogContent"], {
-                className: "sm:max-w-[425px] flex flex-col items-center justify-center",
+                className: "sm:max-w-[425px] max-h-[80vh] overflow-y-auto flex flex-col items-center justify-center",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogTitle"], {
                         children: "Zone Pricing"
                     }, void 0, false, {
                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                        lineNumber: 406,
+                        lineNumber: 456,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -698,7 +740,7 @@ function PricingPreferences({ open, onOpenChange }) {
                         children: "You have not set any zone pricing yet."
                     }, void 0, false, {
                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                        lineNumber: 407,
+                        lineNumber: 457,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -707,18 +749,18 @@ function PricingPreferences({ open, onOpenChange }) {
                         children: "Add Zone Pricing"
                     }, void 0, false, {
                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                        lineNumber: 408,
+                        lineNumber: 458,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                lineNumber: 405,
+                lineNumber: 455,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/app/components/PricingPreferences.tsx",
-            lineNumber: 404,
+            lineNumber: 454,
             columnNumber: 7
         }, this);
     }
@@ -728,13 +770,13 @@ function PricingPreferences({ open, onOpenChange }) {
             open: open,
             onOpenChange: onOpenChange,
             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogContent"], {
-                className: "sm:max-w-[425px]",
+                className: "sm:max-w-[425px] max-h-[80vh] overflow-y-auto",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogTitle"], {
                         children: "Your Zone Pricing"
                     }, void 0, false, {
                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                        lineNumber: 424,
+                        lineNumber: 474,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -747,7 +789,7 @@ function PricingPreferences({ open, onOpenChange }) {
                                         children: price.name
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                        lineNumber: 428,
+                                        lineNumber: 478,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -758,7 +800,7 @@ function PricingPreferences({ open, onOpenChange }) {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                        lineNumber: 429,
+                                        lineNumber: 479,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -766,18 +808,50 @@ function PricingPreferences({ open, onOpenChange }) {
                                         children: price.amountInWords
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                        lineNumber: 430,
+                                        lineNumber: 480,
                                         columnNumber: 17
-                                    }, this)
+                                    }, this),
+                                    typeof price.distance === 'number' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "text-xs text-gray-500",
+                                        children: [
+                                            "Distance: ",
+                                            price.distance.toFixed(2),
+                                            " km"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                                        lineNumber: 482,
+                                        columnNumber: 19
+                                    }, this),
+                                    (()=>{
+                                        const std = standardPrices.find((p)=>p.name === price.name);
+                                        if (std) {
+                                            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "text-xs text-blue-600",
+                                                children: [
+                                                    "Standard: GHS ",
+                                                    std.price,
+                                                    " (",
+                                                    typeof std.distance === 'string' ? std.distance : std.distance?.toFixed(2),
+                                                    " km)"
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                                                lineNumber: 488,
+                                                columnNumber: 23
+                                            }, this);
+                                        }
+                                        return null;
+                                    })()
                                 ]
                             }, idx, true, {
                                 fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                lineNumber: 427,
+                                lineNumber: 477,
                                 columnNumber: 15
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                        lineNumber: 425,
+                        lineNumber: 475,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -786,18 +860,18 @@ function PricingPreferences({ open, onOpenChange }) {
                         children: "Edit Zone Pricing"
                     }, void 0, false, {
                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                        lineNumber: 434,
+                        lineNumber: 496,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                lineNumber: 423,
+                lineNumber: 473,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/app/components/PricingPreferences.tsx",
-            lineNumber: 422,
+            lineNumber: 472,
             columnNumber: 7
         }, this);
     }
@@ -806,7 +880,7 @@ function PricingPreferences({ open, onOpenChange }) {
         open: open,
         onOpenChange: onOpenChange,
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogContent"], {
-            className: "sm:max-w-[425px]",
+            className: "sm:max-w-[425px] max-h-[80vh] overflow-y-auto",
             children: [
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogHeader"], {
                     children: [
@@ -814,7 +888,7 @@ function PricingPreferences({ open, onOpenChange }) {
                             children: "Set Your Preferred Route Prices"
                         }, void 0, false, {
                             fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                            lineNumber: 450,
+                            lineNumber: 513,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogDescription"], {
@@ -826,13 +900,13 @@ function PricingPreferences({ open, onOpenChange }) {
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                            lineNumber: 451,
+                            lineNumber: 514,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                    lineNumber: 449,
+                    lineNumber: 512,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -844,187 +918,277 @@ function PricingPreferences({ open, onOpenChange }) {
                         }
                     }, void 0, false, {
                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                        lineNumber: 458,
+                        lineNumber: 520,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                    lineNumber: 457,
+                    lineNumber: 519,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "space-y-6",
-                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "space-y-4",
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "grid grid-cols-1 gap-2",
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "space-y-1",
-                                        children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
-                                                className: "font-semibold",
-                                                children: "Pickup"
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                                lineNumber: 468,
-                                                columnNumber: 17
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                className: "text-sm text-gray-600",
-                                                children: currentRoute.pickup.name
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                                lineNumber: 469,
-                                                columnNumber: 17
-                                            }, this)
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                        lineNumber: 467,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "space-y-1",
-                                        children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
-                                                className: "font-semibold",
-                                                children: "Dropoff"
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                                lineNumber: 472,
-                                                columnNumber: 17
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                className: "text-sm text-gray-600",
-                                                children: currentRoute.dropoff.name
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                                lineNumber: 473,
-                                                columnNumber: 17
-                                            }, this)
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                        lineNumber: 471,
-                                        columnNumber: 15
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                lineNumber: 466,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "space-y-2",
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
-                                        htmlFor: "price",
-                                        children: "Your Price (GHS)"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                        lineNumber: 478,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
-                                        id: "price",
-                                        type: "number",
-                                        step: "0.01",
-                                        min: "0",
-                                        value: currentRoute.userPrice,
-                                        onChange: (e)=>handlePriceChange(currentRoute.id, e.target.value),
-                                        placeholder: "Enter your preferred price",
-                                        className: "w-full"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                        lineNumber: 479,
-                                        columnNumber: 15
-                                    }, this),
-                                    currentRoute.averagePrice !== null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "text-sm text-gray-600 mt-1",
-                                        children: [
-                                            "Average Price: GHS ",
-                                            currentRoute.averagePrice.toFixed(2)
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                        lineNumber: 490,
-                                        columnNumber: 17
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                lineNumber: 477,
-                                columnNumber: 13
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                        lineNumber: 465,
-                        columnNumber: 11
-                    }, this)
-                }, void 0, false, {
+                    className: "flex flex-col sm:flex-row gap-4 mb-2",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "flex-1 space-y-1",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
+                                    className: "font-semibold",
+                                    children: "Pickup"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                                    lineNumber: 529,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-sm text-gray-600",
+                                    children: currentRoute.pickup.name
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                                    lineNumber: 530,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-xs text-gray-500",
+                                    children: currentRoute.pickup.coordinates
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                                    lineNumber: 531,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                            lineNumber: 528,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "flex-1 space-y-1",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
+                                    className: "font-semibold",
+                                    children: "Dropoff"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                                    lineNumber: 534,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-sm text-gray-600",
+                                    children: currentRoute.dropoff.name
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                                    lineNumber: 535,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-xs text-gray-500",
+                                    children: currentRoute.dropoff.coordinates
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                                    lineNumber: 536,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                            lineNumber: 533,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
                     fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                    lineNumber: 464,
+                    lineNumber: 527,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "flex flex-col sm:flex-row gap-4 mb-2",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "flex-1 space-y-1",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
+                                    className: "font-semibold",
+                                    children: "Distance"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                                    lineNumber: 543,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-sm text-gray-600",
+                                    children: (()=>{
+                                        const parseCoord = (coord)=>{
+                                            const match = coord.match(/([\d.]+)°\s*([NS]),\s*([\-\d.]+)°\s*([EW])/);
+                                            if (!match) return [
+                                                0,
+                                                0
+                                            ];
+                                            let lat = parseFloat(match[1]);
+                                            let latDir = match[2];
+                                            let lon = parseFloat(match[3]);
+                                            let lonDir = match[4];
+                                            if (latDir === 'S') lat = -lat;
+                                            if (lonDir === 'W') lon = -lon;
+                                            return [
+                                                lat,
+                                                lon
+                                            ];
+                                        };
+                                        const [pickupLat, pickupLon] = parseCoord(currentRoute.pickup.coordinates);
+                                        const [dropoffLat, dropoffLon] = parseCoord(currentRoute.dropoff.coordinates);
+                                        const distance = haversineDistance(pickupLat, pickupLon, dropoffLat, dropoffLon);
+                                        return `${distance.toFixed(2)} km`;
+                                    })()
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                                    lineNumber: 544,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                            lineNumber: 542,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "flex-1 space-y-1",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
+                                    className: "font-semibold",
+                                    children: "Average Price"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                                    lineNumber: 565,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "text-sm text-gray-600 mt-1",
+                                    children: currentRoute.averagePrice !== null ? `GHS ${currentRoute.averagePrice.toFixed(2)}` : 'Not available'
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                                    lineNumber: 566,
+                                    columnNumber: 13
+                                }, this),
+                                (()=>{
+                                    const std = standardPrices.find((p)=>p.name === `${currentRoute.pickup.name} to ${currentRoute.dropoff.name}`);
+                                    if (std) {
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "text-xs text-blue-600 block",
+                                            children: [
+                                                "Standard: GHS ",
+                                                std.price,
+                                                " (",
+                                                typeof std.distance === 'string' ? std.distance : std.distance?.toFixed(2),
+                                                " km)"
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                                            lineNumber: 576,
+                                            columnNumber: 19
+                                        }, this);
+                                    }
+                                    return null;
+                                })()
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                            lineNumber: 564,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                    lineNumber: 541,
+                    columnNumber: 9
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "mb-4",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
+                            htmlFor: "price",
+                            children: "Your Price (GHS)"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                            lineNumber: 588,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
+                            id: "price",
+                            type: "number",
+                            step: "0.01",
+                            min: "0",
+                            value: currentRoute.userPrice,
+                            onChange: (e)=>handlePriceChange(currentRoute.id, e.target.value),
+                            placeholder: "Enter your preferred price",
+                            className: "w-full"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                            lineNumber: 589,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/src/app/components/PricingPreferences.tsx",
+                    lineNumber: 587,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogFooter"], {
                     className: "flex justify-between mt-6",
                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex gap-2",
+                        className: "flex gap-2 w-full",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                 type: "button",
                                 onClick: handlePrevious,
                                 disabled: currentStep === 0,
-                                className: "px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18] disabled:opacity-50",
+                                className: "flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18] disabled:opacity-50",
                                 children: "Previous"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                lineNumber: 500,
+                                lineNumber: 604,
                                 columnNumber: 13
                             }, this),
                             !isLastStep ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                 type: "button",
                                 onClick: handleNext,
-                                className: "px-4 py-2 text-sm font-medium text-white bg-[#FE5B18] rounded-md hover:bg-[#e54d0e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18]",
+                                className: "flex-1 px-4 py-2 text-sm font-medium text-white bg-[#FE5B18] rounded-md hover:bg-[#e54d0e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18]",
                                 children: "Next"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                lineNumber: 509,
+                                lineNumber: 613,
                                 columnNumber: 15
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                 type: "button",
                                 onClick: handleSubmit,
                                 disabled: isSubmitting,
-                                className: "px-4 py-2 text-sm font-medium text-white bg-[#FE5B18] rounded-md hover:bg-[#e54d0e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18] disabled:opacity-50",
+                                className: "flex-1 px-4 py-2 text-sm font-medium text-white bg-[#FE5B18] rounded-md hover:bg-[#e54d0e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18] disabled:opacity-50",
                                 children: isSubmitting ? 'Submitting...' : 'Submit All'
                             }, void 0, false, {
                                 fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                lineNumber: 517,
+                                lineNumber: 621,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                        lineNumber: 499,
+                        lineNumber: 603,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                    lineNumber: 498,
+                    lineNumber: 602,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/components/PricingPreferences.tsx",
-            lineNumber: 448,
+            lineNumber: 510,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-        lineNumber: 447,
+        lineNumber: 509,
         columnNumber: 5
     }, this);
 }
@@ -1754,19 +1918,19 @@ function Orders() {
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/orders/page.tsx",
                                                 lineNumber: 443,
-                                                columnNumber: 17
+                                                columnNumber: 15
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/orders/page.tsx",
                                             lineNumber: 437,
-                                            columnNumber: 15
+                                            columnNumber: 13
                                         }, this),
                                         "Sign Out"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/orders/page.tsx",
                                     lineNumber: 433,
-                                    columnNumber: 13
+                                    columnNumber: 11
                                 }, this)
                             ]
                         }, void 0, true, {
