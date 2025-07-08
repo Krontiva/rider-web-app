@@ -366,9 +366,9 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
           const match = coord.match(/([\d.]+)°\s*([NS]),\s*([\-\d.]+)°\s*([EW])/);
           if (!match) return [0, 0];
           let lat = parseFloat(match[1]);
-          let latDir = match[2];
+          const latDir = match[2];
           let lon = parseFloat(match[3]);
-          let lonDir = match[4];
+          const lonDir = match[4];
           if (latDir === 'S') lat = -lat;
           if (lonDir === 'W') lon = -lon;
           return [lat, lon];
@@ -544,12 +544,13 @@ export default function PricingPreferences({ open, onOpenChange }: PricingPrefer
             <p className="text-sm text-gray-600">
               {(() => {
                 const parseCoord = (coord: string) => {
+                  // Example: "5.6764° N, -0.1775° W"
                   const match = coord.match(/([\d.]+)°\s*([NS]),\s*([\-\d.]+)°\s*([EW])/);
                   if (!match) return [0, 0];
                   let lat = parseFloat(match[1]);
-                  let latDir = match[2];
+                  const latDir = match[2];
                   let lon = parseFloat(match[3]);
-                  let lonDir = match[4];
+                  const lonDir = match[4];
                   if (latDir === 'S') lat = -lat;
                   if (lonDir === 'W') lon = -lon;
                   return [lat, lon];

@@ -637,9 +637,9 @@ function PricingPreferences({ open, onOpenChange }) {
                         0
                     ];
                     let lat = parseFloat(match[1]);
-                    let latDir = match[2];
+                    const latDir = match[2];
                     let lon = parseFloat(match[3]);
-                    let lonDir = match[4];
+                    const lonDir = match[4];
                     if (latDir === 'S') lat = -lat;
                     if (lonDir === 'W') lon = -lon;
                     return [
@@ -1045,15 +1045,16 @@ function PricingPreferences({ open, onOpenChange }) {
                                     className: "text-sm text-gray-600",
                                     children: (()=>{
                                         const parseCoord = (coord)=>{
+                                            // Example: "5.6764° N, -0.1775° W"
                                             const match = coord.match(/([\d.]+)°\s*([NS]),\s*([\-\d.]+)°\s*([EW])/);
                                             if (!match) return [
                                                 0,
                                                 0
                                             ];
                                             let lat = parseFloat(match[1]);
-                                            let latDir = match[2];
+                                            const latDir = match[2];
                                             let lon = parseFloat(match[3]);
-                                            let lonDir = match[4];
+                                            const lonDir = match[4];
                                             if (latDir === 'S') lat = -lat;
                                             if (lonDir === 'W') lon = -lon;
                                             return [
@@ -1085,7 +1086,7 @@ function PricingPreferences({ open, onOpenChange }) {
                                     children: "Average Price"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                    lineNumber: 565,
+                                    lineNumber: 566,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1093,7 +1094,7 @@ function PricingPreferences({ open, onOpenChange }) {
                                     children: currentRoute.averagePrice !== null ? `GHS ${currentRoute.averagePrice.toFixed(2)}` : 'Not available'
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                    lineNumber: 566,
+                                    lineNumber: 567,
                                     columnNumber: 13
                                 }, this),
                                 (()=>{
@@ -1110,7 +1111,7 @@ function PricingPreferences({ open, onOpenChange }) {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                            lineNumber: 576,
+                                            lineNumber: 577,
                                             columnNumber: 19
                                         }, this);
                                     }
@@ -1119,7 +1120,7 @@ function PricingPreferences({ open, onOpenChange }) {
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                            lineNumber: 564,
+                            lineNumber: 565,
                             columnNumber: 11
                         }, this)
                     ]
@@ -1136,7 +1137,7 @@ function PricingPreferences({ open, onOpenChange }) {
                             children: "Your Price (GHS)"
                         }, void 0, false, {
                             fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                            lineNumber: 588,
+                            lineNumber: 589,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -1150,13 +1151,13 @@ function PricingPreferences({ open, onOpenChange }) {
                             className: "w-full"
                         }, void 0, false, {
                             fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                            lineNumber: 589,
+                            lineNumber: 590,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                    lineNumber: 587,
+                    lineNumber: 588,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogFooter"], {
@@ -1172,7 +1173,7 @@ function PricingPreferences({ open, onOpenChange }) {
                                 children: "Previous"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                lineNumber: 604,
+                                lineNumber: 605,
                                 columnNumber: 13
                             }, this),
                             !isLastStep ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1182,7 +1183,7 @@ function PricingPreferences({ open, onOpenChange }) {
                                 children: "Next"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                lineNumber: 613,
+                                lineNumber: 614,
                                 columnNumber: 15
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                 type: "button",
@@ -1192,18 +1193,18 @@ function PricingPreferences({ open, onOpenChange }) {
                                 children: isSubmitting ? 'Submitting...' : 'Submit All'
                             }, void 0, false, {
                                 fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                                lineNumber: 621,
+                                lineNumber: 622,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                        lineNumber: 603,
+                        lineNumber: 604,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/app/components/PricingPreferences.tsx",
-                    lineNumber: 602,
+                    lineNumber: 603,
                     columnNumber: 9
                 }, this)
             ]
