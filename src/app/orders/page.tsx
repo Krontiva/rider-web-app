@@ -117,7 +117,15 @@ const OrderCard = ({ order }: OrderCardProps) => {
                 <div className="flex justify-between items-start">
                   <div>
                     <span className="text-gray-600">Order #{batchedOrder.orderNumber}</span>
-                    <p className="text-sm text-gray-500 truncate">
+                    <p
+                      className="text-sm text-gray-500"
+                      style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
                       {batchedOrder.dropOff?.[0]?.toAddress || ''}
                     </p>
                     {batchedOrder.customerPhoneNumber && (
@@ -155,7 +163,15 @@ const OrderCard = ({ order }: OrderCardProps) => {
           ))}
           <div className="mt-3">
             <p className="font-semibold mb-1">Pickup Point</p>
-            <p className="text-gray-600 truncate">
+            <p
+              className="text-gray-600"
+              style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+            >
               {order.pickup?.[0]?.fromAddress || ''}
             </p>
           </div>
@@ -216,13 +232,29 @@ const OrderCard = ({ order }: OrderCardProps) => {
       <div className="flex gap-4 mb-4">
         <div className="flex-1">
           <p className="font-semibold mb-1 text-black">Pickup</p>
-          <p className="text-gray-600 truncate">
+          <p
+            className="text-gray-600"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
             {order.pickup?.[0]?.fromAddress || ''}
           </p>
         </div>
         <div className="flex-1">
           <p className="font-semibold mb-1 text-black">Dropoff</p>
-          <p className="text-gray-600 truncate">
+          <p
+            className="text-gray-600"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
             {order.dropOff?.[0]?.toAddress || ''}
           </p>
         </div>
@@ -270,27 +302,25 @@ export default function Orders() {
       }
 
       const userData = await userResponse.json();
-      const courierName = userData.fullName; // Assuming the API returns fullName
+      const courierId = userData.id;
 
-      // Fetch orders
-      const ordersResponse = await fetch('https://api-server.krontiva.africa/api:uEBBwbSs/delikaquickshipper_orders_table', {
-        headers: {
-          'X-Xano-Authorization': `Bearer ${authToken}`,
+      // Fetch orders assigned to this courier
+      const ordersResponse = await fetch(
+        `https://api-server.krontiva.africa/api:uEBBwbSs/getRiderOrders/${courierId}`,
+        {
+          headers: {
+            'X-Xano-Authorization': `Bearer ${authToken}`,
+          },
         }
-      });
+      );
 
       if (!ordersResponse.ok) {
         throw new Error('Failed to fetch orders');
       }
 
-      const allOrders = await ordersResponse.json();
-      
-      // Filter orders by courierName
-      const filteredOrders = allOrders.filter((order: Order) => 
-        order.courierName === courierName
-      );
+      const riderOrders = await ordersResponse.json();
 
-      setOrders(filteredOrders);
+      setOrders(riderOrders);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load orders');
 
