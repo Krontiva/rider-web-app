@@ -25,6 +25,7 @@ interface Order {
   orderOnmywayTime: string;
   customerPhoneNumber: string;
   distance?: number;
+  courierOtp?: string;
 }
 
 const STATUS_COLORS = {
@@ -67,6 +68,9 @@ export default function OrderDetails({ params }: { params: Promise<{ id: string 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [courierOtp, setCourierOtp] = useState('');
+  const [showCourierOtp, setShowCourierOtp] = useState(false);
+  const [isVerifyingCourierOtp, setIsVerifyingCourierOtp] = useState(false);
   const [otp, setOtp] = useState('');
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -377,6 +381,27 @@ export default function OrderDetails({ params }: { params: Promise<{ id: string 
     }
   };
 
+  const handleCourierOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsVerifyingCourierOtp(true);
+
+    try {
+      if (!order || courierOtp !== order.courierOtp) {
+        throw new Error('Invalid courier OTP code');
+      }
+
+      // If OTP matches, proceed with pickup
+      await handlePickup();
+      setShowCourierOtp(false);
+      setCourierOtp('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Verification failed');
+    } finally {
+      setIsVerifyingCourierOtp(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white p-4">
@@ -475,6 +500,78 @@ export default function OrderDetails({ params }: { params: Promise<{ id: string 
                     Verifying...
                   </span>
                 ) : 'Verify'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  if (showCourierOtp) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white px-4">
+        <div className="max-w-md w-full space-y-8 p-4 md:p-8">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-bold text-black">
+              Enter Restaurant OTP
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Please enter the OTP provided by the restaurant
+            </p>
+          </div>
+          <form className="mt-8 space-y-6" onSubmit={handleCourierOtpSubmit}>
+            <div className="rounded-md shadow-sm space-y-4">
+              <div>
+                <label htmlFor="courierOtp" className="sr-only">
+                  Restaurant OTP
+                </label>
+                <input
+                  id="courierOtp"
+                  name="courierOtp"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="\d*"
+                  maxLength={4}
+                  required
+                  className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#FE5B18] focus:border-[#FE5B18] text-center text-2xl tracking-widest"
+                  placeholder="••••"
+                  value={courierOtp}
+                  onChange={(e) => setCourierOtp(e.target.value.replace(/\D/g, ''))}
+                  disabled={isVerifyingCourierOtp}
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="text-red-500 text-sm text-center">
+                {error}
+              </div>
+            )}
+
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                disabled={isVerifyingCourierOtp}
+                className="flex-1 group relative flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#FE5B18] hover:bg-[#e54d0e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18] disabled:opacity-50"
+              >
+                {isVerifyingCourierOtp ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                    </svg>
+                    Verifying...
+                  </span>
+                ) : 'Verify'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCourierOtp(false)}
+                disabled={isVerifyingCourierOtp}
+                className="flex-1 py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FE5B18] disabled:opacity-50"
+              >
+                Cancel
               </button>
             </div>
           </form>
@@ -597,7 +694,7 @@ export default function OrderDetails({ params }: { params: Promise<{ id: string 
               <div className="flex items-center gap-4">
                 {order.orderStatus === 'Assigned' && (
                   <button 
-                    onClick={handlePickup}
+                    onClick={() => setShowCourierOtp(true)}
                     disabled={isPickingUp}
                     className="text-white font-medium flex items-center bg-[#FE5B18] px-4 py-2 rounded-md hover:bg-[#e54d0e] disabled:opacity-50"
                   >

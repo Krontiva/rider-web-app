@@ -308,8 +308,8 @@ export default function Orders() {
       const ordersResponse = await fetch(
         `https://api-server.krontiva.africa/api:uEBBwbSs/getRiderOrders/${courierId}`,
         {
-          headers: {
-            'X-Xano-Authorization': `Bearer ${authToken}`,
+        headers: {
+          'X-Xano-Authorization': `Bearer ${authToken}`,
           },
         }
       );
